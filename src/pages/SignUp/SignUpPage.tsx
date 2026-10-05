@@ -14,6 +14,7 @@ import {
   passwordPolicyHint,
   passwordPolicyValidation,
 } from "../../commons/configs/passwordConfig";
+import { resendCooldownSeconds } from "../../commons/configs/verificationConfig";
 
 type FormValues = {
   email: string;
@@ -47,7 +48,9 @@ export default function SignUpPage() {
 
     try {
       await register(userData);
-      navigate("/sent-verification-email", { state: { email } });
+      navigate("/sent-verification-email", {
+        state: { email, cooldown: resendCooldownSeconds },
+      });
     } catch (error: unknown) {
       console.error(error);
       if (axios.isAxiosError(error) && error.response?.status === 409) {
@@ -57,7 +60,7 @@ export default function SignUpPage() {
         });
       } else if (axios.isAxiosError(error) && error.response?.status === 502) {
         navigate("/sent-verification-email", {
-          state: { email, emailFailed: true },
+          state: { email, emailFailed: true, cooldown: resendCooldownSeconds },
         });
       } else {
         setError("email", {

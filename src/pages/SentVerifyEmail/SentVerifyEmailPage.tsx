@@ -5,7 +5,7 @@ import { Navigate, useLocation } from "react-router-dom";
 
 export default function SentVerificationPage() {
   const location = useLocation();
-  const { email, emailFailed } = location.state || {};
+  const { email, emailFailed, cooldown } = location.state || {};
 
   if (!email) {
     return <Navigate to="/sign-in" replace />;
@@ -37,7 +37,7 @@ export default function SentVerificationPage() {
               </p>
             )}
           </div>
-          <ResendModal onClick={resendEmail} startWithCooldown={emailFailed} />
+          <ResendModal onClick={resendEmail} initialCooldown={cooldown ?? 0} />
         </div>
       </div>
     </div>

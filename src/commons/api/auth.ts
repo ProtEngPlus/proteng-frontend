@@ -8,6 +8,7 @@ import { UserLogin, UserRegister } from "../interfaces/User.interface";
 import { get, patch, post } from "./common";
 import { isResponseOk } from "./utils";
 import { addHoursToDate } from "../utils/utils";
+import { resendCooldownSeconds } from "../configs/verificationConfig";
 
 /*------------------------- login-logout section -------------------------------------*/
 
@@ -125,6 +126,14 @@ export const sendVerification = async (email: string) => {
   }
 
   return res;
+};
+
+export const getRetryAfterSeconds = (error: unknown): number | null => {
+  if (axios.isAxiosError(error) && error.response?.status === 429) {
+    const seconds = error.response.data?.data?.retry_after_seconds;
+    return typeof seconds === "number" ? seconds : resendCooldownSeconds;
+  }
+  return null;
 };
 
 export const successVerification = async (token: string) => {

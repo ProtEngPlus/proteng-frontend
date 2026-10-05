@@ -1,23 +1,21 @@
 import { useEffect, useState } from "react";
 import Button from "../../../commons/components/Button/Button";
+import { getRetryAfterSeconds } from "../../../commons/api/auth";
+import { resendCooldownSeconds } from "../../../commons/configs/verificationConfig";
 
 interface ResendModalProps {
   onClick: () => Promise<void>;
-  startWithCooldown?: boolean;
+  initialCooldown?: number;
 }
-
-const COOLDOWN_SECONDS = 60;
 
 export default function ResendModal({
   onClick,
-  startWithCooldown = false,
+  initialCooldown = 0,
 }: ResendModalProps) {
-  const [secondsLeft, setSecondsLeft] = useState(
-    startWithCooldown ? COOLDOWN_SECONDS : 0,
-  );
-  const [feedback, setFeedback] = useState<"idle" | "success" | "error">(
-    "idle",
-  );
+  const [secondsLeft, setSecondsLeft] = useState(initialCooldown);
+  const [feedback, setFeedback] = useState<
+    "idle" | "success" | "wait" | "error"
+  >("idle");
 
   useEffect(() => {
     if (secondsLeft <= 0) return;
@@ -31,8 +29,14 @@ export default function ResendModal({
     try {
       await onClick();
       setFeedback("success");
-      setSecondsLeft(COOLDOWN_SECONDS);
+      setSecondsLeft(resendCooldownSeconds);
     } catch (error: unknown) {
+      const retryAfter = getRetryAfterSeconds(error);
+      if (retryAfter !== null) {
+        setFeedback("wait");
+        setSecondsLeft(retryAfter);
+        return;
+      }
       console.error(error);
       setFeedback("error");
     }
@@ -64,6 +68,12 @@ export default function ResendModal({
       {feedback === "success" && secondsLeft > 0 && (
         <p className="font-normal text-pep-green text-sm">
           Verification email sent.
+        </p>
+      )}
+      {feedback === "wait" && secondsLeft > 0 && (
+        <p className="font-normal text-gray-500 text-sm">
+          A verification email was sent recently. Please wait before requesting
+          another one.
         </p>
       )}
       {feedback === "error" && (

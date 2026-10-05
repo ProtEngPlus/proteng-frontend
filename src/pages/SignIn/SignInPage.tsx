@@ -5,7 +5,8 @@ import Button from "../../commons/components/Button/Button";
 import { useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { useAuth } from "../../commons/hooks/useAuth";
-import { sendVerification } from "../../commons/api/auth";
+import { getRetryAfterSeconds, sendVerification } from "../../commons/api/auth";
+import { resendCooldownSeconds } from "../../commons/configs/verificationConfig";
 import { ENVIRONMENT } from "../../commons/configs/envConfig";
 import axios from "axios";
 import { normalizeEmail } from "../../commons/utils/normalizeEmail";
@@ -35,9 +36,17 @@ export default function SignInPage() {
         const { message } = error.response.data;
 
         if (message === "error: email not verified") {
-          await sendVerification(email);
+          let cooldown = resendCooldownSeconds;
+          let emailFailed = false;
+          try {
+            await sendVerification(email);
+          } catch (sendError: unknown) {
+            const retryAfter = getRetryAfterSeconds(sendError);
+            emailFailed = retryAfter === null;
+            cooldown = retryAfter ?? 0;
+          }
           navigate("/sent-verification-email", {
-            state: { email },
+            state: { email, emailFailed, cooldown },
           });
         } else if (message === "error: invalid email or password") {
           setError("email", {
