@@ -22,7 +22,12 @@ type FormValues = {
 
 export default function SignUpPage() {
   const form = useForm<FormValues>();
-  const { handleSubmit, setError, watch } = form;
+  const {
+    handleSubmit,
+    setError,
+    watch,
+    formState: { isSubmitting },
+  } = form;
   const navigate = useNavigate();
 
   const onSubmit = handleSubmit(async (data) => {
@@ -166,7 +171,8 @@ export default function SignUpPage() {
                 id="submit-sign-up"
                 buttonType="submit"
                 type="submit"
-                text="Create Account"
+                text={isSubmitting ? "Please wait..." : "Create Account"}
+                disabled={isSubmitting}
                 className="w-[11.875rem] px-7 py-3.5"
               />
             </div>

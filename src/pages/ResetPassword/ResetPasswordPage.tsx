@@ -12,7 +12,12 @@ type FormValues = {
 
 export default function ResetPasswordPage() {
   const form = useForm<FormValues>();
-  const { handleSubmit, watch, setError } = form;
+  const {
+    handleSubmit,
+    watch,
+    setError,
+    formState: { isSubmitting },
+  } = form;
   const navigate = useNavigate();
 
   const params = new URLSearchParams(window.location.search);
@@ -76,10 +81,11 @@ export default function ResetPasswordPage() {
             />
             <Button
               id="reset-password"
-              type="submit"
               buttonType="submit"
-              text="Reset Password"
+              type="submit"
+              text={isSubmitting ? "Please wait..." : "Reset Password"}
               className="w-full"
+              disabled={isSubmitting}
             />
           </form>
         </FormProvider>
