@@ -13,6 +13,10 @@ import {
   SuccessOverlayProps,
 } from "../../commons/components/ModalOverlay/SuccessOverlay";
 import { changePassword } from "../../commons/api/auth";
+import {
+  passwordPolicyHint,
+  passwordPolicyValidation,
+} from "../../commons/configs/passwordConfig";
 
 type FormValues = {
   current_password: string;
@@ -103,8 +107,10 @@ export default function ChangePasswordPage() {
           id="new_password"
           label="New Password"
           placeholder="New Password*"
+          hint={passwordPolicyHint}
           additionalValidation={{
             required: { value: true, message: "New Password is required." },
+            ...passwordPolicyValidation,
           }}
         />
 

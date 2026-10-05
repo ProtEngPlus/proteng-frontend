@@ -10,6 +10,10 @@ import { Role, UserRole } from "../../commons/interfaces/User.interface";
 import { register } from "../../commons/api/auth";
 import { normalizeEmail } from "../../commons/utils/normalizeEmail";
 import axios from "axios";
+import {
+  passwordPolicyHint,
+  passwordPolicyValidation,
+} from "../../commons/configs/passwordConfig";
 
 type FormValues = {
   email: string;
@@ -100,11 +104,14 @@ export default function SignUpPage() {
                 <Icon icon="ph:key" className="text-gray-400 size-6" />
                 <label className="font-light">Password:</label>
               </div>
+
               <PasswordInput
                 id="password"
                 placeholder="Password*"
+                hint={passwordPolicyHint}
                 additionalValidation={{
                   required: { value: true, message: "Password is required." },
+                  ...passwordPolicyValidation,
                   validate: (value: string) => value === watch("re_password"),
                 }}
               />

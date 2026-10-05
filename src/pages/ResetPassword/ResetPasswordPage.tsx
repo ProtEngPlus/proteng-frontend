@@ -4,6 +4,10 @@ import Button from "../../commons/components/Button/Button";
 import { Navigate, useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { resetPassword } from "../../commons/api/auth";
+import {
+  passwordPolicyHint,
+  passwordPolicyValidation,
+} from "../../commons/configs/passwordConfig";
 
 type FormValues = {
   new_password: string;
@@ -60,8 +64,10 @@ export default function ResetPasswordPage() {
             <PasswordInput
               id="new_password"
               placeholder="New Password"
+              hint={passwordPolicyHint}
               additionalValidation={{
                 required: { value: true, message: "New Password is required." },
+                ...passwordPolicyValidation,
                 validate: (value: string) =>
                   value === watch("confirm_new_password"),
               }}
