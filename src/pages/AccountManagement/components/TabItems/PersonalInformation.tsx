@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../../../commons/hooks/useAuth";
 import { updateMe } from "../../../../commons/api/user";
 import { Role } from "../../../../commons/interfaces/User.interface";
+import { normalizeEmail } from "../../../../commons/utils/normalizeEmail";
 
 type FormValues = {
   name: string;
@@ -80,7 +81,7 @@ export default function PersonalInformation() {
     setUserData({
       name: data.name,
       surname: data.surname,
-      email: data.email,
+      email: normalizeEmail(data.email),
       user_role: data.user_role,
       role: ["user"],
     });
@@ -137,6 +138,7 @@ export default function PersonalInformation() {
             </div>
             <TextInput
               id="email"
+              autoLowercase
               placeholder="Email*"
               disabled
               className="w-full"

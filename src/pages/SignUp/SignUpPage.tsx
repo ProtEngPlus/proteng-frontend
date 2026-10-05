@@ -9,6 +9,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { Role, UserRole } from "../../commons/interfaces/User.interface";
 import { createUser } from "../../commons/api/user";
 import { sendVerification } from "../../commons/api/auth";
+import { normalizeEmail } from "../../commons/utils/normalizeEmail";
 
 type FormValues = {
   email: string;
@@ -25,8 +26,9 @@ export default function SignUpPage() {
   const navigate = useNavigate();
 
   const onSubmit = handleSubmit(async (data) => {
+    const email = normalizeEmail(data.email);
     const userData = {
-      email: data.email,
+      email,
       password: data.password,
       name: data.name,
       surname: data.surname,
@@ -36,8 +38,8 @@ export default function SignUpPage() {
 
     try {
       await createUser(userData);
-      await sendVerification(data.email);
-      navigate("/sent-verification-email", { state: { email: data.email } });
+      await sendVerification(email);
+      navigate("/sent-verification-email", { state: { email } });
     } catch (error: unknown) {
       console.error(error);
       setError("email", {
@@ -72,6 +74,7 @@ export default function SignUpPage() {
               </div>
               <TextInput
                 id="email"
+                autoLowercase
                 placeholder="Email*"
                 additionalValidation={{
                   required: { value: true },

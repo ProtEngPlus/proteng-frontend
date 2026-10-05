@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { forgotPassword } from "../../commons/api/auth";
+import { normalizeEmail } from "../../commons/utils/normalizeEmail";
 
 type FormValues = {
   email: string;
@@ -17,8 +18,7 @@ export default function ForgetPasswordPage() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await forgotPassword(data.email);
-      console.log(`send to ${data.email}`);
+      await forgotPassword(normalizeEmail(data.email));
       navigate("/sign-in");
     } catch (error: unknown) {
       console.error(error);
@@ -51,6 +51,7 @@ export default function ForgetPasswordPage() {
             <TextInput
               id="email"
               placeholder="Email"
+              autoLowercase
               additionalValidation={{
                 required: { value: true },
                 pattern: {

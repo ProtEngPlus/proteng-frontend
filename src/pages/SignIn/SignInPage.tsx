@@ -8,6 +8,7 @@ import { useAuth } from "../../commons/hooks/useAuth";
 import { sendVerification } from "../../commons/api/auth";
 import { ENVIRONMENT } from "../../commons/configs/envConfig";
 import axios from "axios";
+import { normalizeEmail } from "../../commons/utils/normalizeEmail";
 
 type FormValues = {
   email: string;
@@ -21,17 +22,18 @@ export default function SignInPage() {
   const navigate = useNavigate();
 
   const onSubmit = handleSubmit(async (data) => {
+    const email = normalizeEmail(data.email);
     try {
-      await login(data.email, data.password, "user");
+      await login(email, data.password, "user");
       navigate("/dashboard");
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         const { message } = error.response.data;
 
         if (message === "error: email not verified") {
-          await sendVerification(data.email);
+          await sendVerification(email);
           navigate("/sent-verification-email", {
-            state: { email: data.email },
+            state: { email },
           });
         } else if (message === "error: invalid email or password") {
           setError("email", {
@@ -63,6 +65,7 @@ export default function SignInPage() {
           >
             <TextInput
               id="email"
+              autoLowercase
               placeholder="Email"
               additionalValidation={{
                 required: {
