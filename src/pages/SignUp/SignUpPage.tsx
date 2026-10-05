@@ -55,6 +55,10 @@ export default function SignUpPage() {
           type: "manual",
           message: "Email is already registered.",
         });
+      } else if (axios.isAxiosError(error) && error.response?.status === 502) {
+        navigate("/sent-verification-email", {
+          state: { email, emailFailed: true },
+        });
       } else {
         setError("email", {
           type: "manual",

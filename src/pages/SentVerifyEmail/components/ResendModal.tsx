@@ -3,12 +3,18 @@ import Button from "../../../commons/components/Button/Button";
 
 interface ResendModalProps {
   onClick: () => Promise<void>;
+  startWithCooldown?: boolean;
 }
 
 const COOLDOWN_SECONDS = 60;
 
-export default function ResendModal({ onClick }: ResendModalProps) {
-  const [secondsLeft, setSecondsLeft] = useState(0);
+export default function ResendModal({
+  onClick,
+  startWithCooldown = false,
+}: ResendModalProps) {
+  const [secondsLeft, setSecondsLeft] = useState(
+    startWithCooldown ? COOLDOWN_SECONDS : 0,
+  );
   const [feedback, setFeedback] = useState<"idle" | "success" | "error">(
     "idle",
   );
