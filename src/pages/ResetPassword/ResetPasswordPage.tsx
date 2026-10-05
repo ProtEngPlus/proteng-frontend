@@ -29,7 +29,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="w-[28%] min-w-fit h-auto py-6 px-4 m-auto bg-white rounded-xl shadow-dropShadow">
+      <div className="w-[36%] min-w-[440px] h-auto py-10 px-8 m-auto bg-white rounded-xl shadow-dropShadow">
         <img
           src={logoWithText}
           alt="logo-with-text"

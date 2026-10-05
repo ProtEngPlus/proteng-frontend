@@ -54,13 +54,13 @@ export default function SignInPage() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="w-[28%] min-w-fit h-auto py-6 px-4 m-auto bg-white rounded-xl shadow-dropShadow">
+      <div className="w-[36%] min-w-[440px] h-auto py-10 px-8 m-auto bg-white rounded-xl shadow-dropShadow">
         <img src={logoWithText} alt="logo-with-text" className="mb-6 mx-auto" />
         <FormProvider {...form}>
           <form
             onSubmit={onSubmit}
             id="sign-in-form"
-            className="space-y-5 mb-9"
+            className="space-y-5"
             noValidate
           >
             <TextInput
@@ -74,16 +74,24 @@ export default function SignInPage() {
                 },
               }}
             />
-            <PasswordInput
-              id="password"
-              placeholder="Password"
-              additionalValidation={{
-                required: {
-                  value: true,
-                  message: "Password is required.",
-                },
-              }}
-            />
+
+            <div className="flex flex-col gap-1">
+              <PasswordInput
+                id="password"
+                placeholder="Password"
+                additionalValidation={{
+                  required: {
+                    value: true,
+                  },
+                }}
+              />
+              <a
+                className="w-full text-label underline text-end cursor-pointer"
+                onClick={() => navigate("/forget-password")}
+              >
+                Forget Password
+              </a>
+            </div>
 
             <Button
               buttonType="submit"
@@ -94,17 +102,12 @@ export default function SignInPage() {
             />
           </form>
         </FormProvider>
-        <div className="flex flex-col text-center">
-          <a
-            className="cursor-pointer"
-            onClick={() => navigate("/forget-password")}
-          >
-            Forget Password?
-          </a>
+
+        <div className="flex flex-col text-center space-y-2 pt-4">
           <label className="font-light">
             Not a member yet?{" "}
             <a
-              className="text-pep-orange font-normal cursor-pointer"
+              className="font-normal text-pep-orange cursor-pointer"
               onClick={() => navigate("/sign-up")}
             >
               Sign Up

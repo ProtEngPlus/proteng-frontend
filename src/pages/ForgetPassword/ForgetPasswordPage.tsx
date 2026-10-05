@@ -27,7 +27,7 @@ export default function ForgetPasswordPage() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="w-[28%] min-w-fit h-auto py-6 px-4 m-auto bg-white rounded-xl shadow-dropShadow">
+      <div className="w-[36%] min-w-[440px] h-auto py-10 px-8 m-auto bg-white rounded-xl shadow-dropShadow">
         <div className="flex justify-center items-center mb-10 relative">
           <Icon
             icon="weui:arrow-outlined"
@@ -38,7 +38,7 @@ export default function ForgetPasswordPage() {
           <img src={logoWithText} alt="logo-with-text" className="mx-auto" />
         </div>
         <div className="leading-6 mb-9 text-center">
-          <h1>Forget Password ?</h1>
+          <h1>Forget Password</h1>
           <label className="font-light">Enter your registered email</label>
         </div>
         <FormProvider {...form}>

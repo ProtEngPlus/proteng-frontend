@@ -56,8 +56,8 @@ export default function SignUpPage() {
   });
 
   return (
-    <div className="flex h-screen min-h-fit items-end justify-center">
-      <div className="w-[75%] min-w-fit h-[85%] min-h-fit mt-[15%] bg-white rounded-t-xl py-6 px-10 shadow-dropShadow">
+    <div className="flex h-screen min-h-fit items-center justify-center py-8">
+      <div className="w-[80%] min-w-fit h-[80%] min-h-fit bg-white rounded-xl py-6 px-8 shadow-dropShadow">
         {/* Logo */}
         <div className="relative flex justify-end mx-2">
           <img src={logo} alt="Logo" className="absolute h-36" />
