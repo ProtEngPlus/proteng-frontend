@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { forgotPassword } from "../../commons/api/auth";
+import { normalizeEmail } from "../../commons/utils/normalizeEmail";
 
 type FormValues = {
   email: string;
@@ -20,8 +21,7 @@ export default function ForgetPasswordPage() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await forgotPassword(data.email);
-      console.log(`send to ${data.email}`);
+      await forgotPassword(normalizeEmail(data.email));
       navigate("/sign-in");
     } catch (error: unknown) {
       console.error(error);
@@ -30,7 +30,7 @@ export default function ForgetPasswordPage() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="w-[28%] min-w-fit h-auto py-6 px-4 m-auto bg-white rounded-xl shadow-dropShadow">
+      <div className="w-[36%] min-w-[440px] h-auto py-10 px-8 m-auto bg-white rounded-xl shadow-dropShadow">
         <div className="flex justify-center items-center mb-10 relative">
           <Icon
             icon="weui:arrow-outlined"
@@ -54,8 +54,9 @@ export default function ForgetPasswordPage() {
             <TextInput
               id="email"
               placeholder="Email"
+              autoLowercase
               additionalValidation={{
-                required: { value: true },
+                required: { value: true, message: "Email is required." },
                 pattern: {
                   value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
                   message: "Incorrect email format.",

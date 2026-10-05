@@ -79,7 +79,7 @@ export default function SelectInput({
     <div
       className={`
       ${formatInput === 2 ? "w-24 text-start" : "w-full"}
-       relative custom-select`}
+       relative custom-select mb-5`}
     >
       {!onEdit ? (
         <div>{currentValue}</div>
@@ -152,7 +152,9 @@ export default function SelectInput({
           />
 
           {typeof errors[id]?.message === "string" && (
-            <p className="text-red-500 text-sm">{errors[id]?.message}</p>
+            <span className="absolute left-0 top-full mt-1 whitespace-nowrap font-light text-error text-xs">
+              {errors[id]?.message}
+            </span>
           )}
         </div>
       )}

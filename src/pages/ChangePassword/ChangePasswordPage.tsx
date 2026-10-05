@@ -119,7 +119,10 @@ export default function ChangePasswordPage() {
           label="Confirm New Password"
           placeholder="Confirm New Password*"
           additionalValidation={{
-            required: { value: true },
+            required: {
+              value: true,
+              message: "Confirm New Password is required.",
+            },
           }}
         />
 

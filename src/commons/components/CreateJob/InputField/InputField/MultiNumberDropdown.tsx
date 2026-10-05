@@ -33,7 +33,7 @@ export default function MultiNumberDropdown({
   } = useFormContext();
 
   useEffect(() => {
-    setValue(id, currentValue);
+    setValue(id, currentValue, { shouldValidate: true });
   }, []);
 
   const currentValue: number[] = Array.isArray(watch(id))
@@ -48,7 +48,7 @@ export default function MultiNumberDropdown({
         ? currentValue.filter((item) => item !== value)
         : [...currentValue, value];
 
-      setValue(id, updated);
+      setValue(id, updated, { shouldValidate: true });
       onChange?.(updated);
     },
     [currentValue, id, onChange, setValue],
@@ -70,10 +70,17 @@ export default function MultiNumberDropdown({
 
   return (
     <div
-      className={`min-w-fit justify-between items-center space-x-3 grid grid-cols-[1fr,4fr] max-w-[1000px]`}
+      className={`min-w-fit justify-between items-start space-x-3 grid grid-cols-[1fr,4fr] max-w-[1000px]`}
     >
-      <label className="font-light">{label}:</label>
-      <div className="relative custom-select w-[336px]">
+      <label className="font-light">
+        {label}
+        {typeof additionalValidation?.required === "object" &&
+          additionalValidation.required.value && (
+            <span className="text-red-500">*</span>
+          )}
+        :
+      </label>
+      <div className="relative custom-select w-[336px] mb-5">
         {!onEdit ? (
           <div>{currentValue.join(", ")}</div>
         ) : (
@@ -141,7 +148,9 @@ export default function MultiNumberDropdown({
             />
 
             {typeof errors[id]?.message === "string" && (
-              <p className="text-red-500 text-sm">{errors[id]?.message}</p>
+              <span className="absolute left-0 top-full mt-1 whitespace-nowrap font-light text-error text-xs">
+                {errors[id]?.message}
+              </span>
             )}
           </div>
         )}

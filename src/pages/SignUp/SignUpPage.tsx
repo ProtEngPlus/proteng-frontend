@@ -34,8 +34,9 @@ export default function SignUpPage() {
   const navigate = useNavigate();
 
   const onSubmit = handleSubmit(async (data) => {
+    const email = normalizeEmail(data.email);
     const userData = {
-      email: data.email,
+      email,
       password: data.password,
       name: data.name,
       surname: data.surname,
@@ -44,15 +45,21 @@ export default function SignUpPage() {
     };
 
     try {
-      await createUser(userData);
-      await sendVerification(data.email);
-      navigate("/sent-verification-email", { state: { email: data.email } });
+      await register(userData);
+      navigate("/sent-verification-email", { state: { email } });
     } catch (error: unknown) {
       console.error(error);
-      setError("email", {
-        type: "manual",
-        message: "Email is already registered.",
-      });
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        setError("email", {
+          type: "manual",
+          message: "Email is already registered.",
+        });
+      } else {
+        setError("email", {
+          type: "manual",
+          message: "Could not create your account. Please try again.",
+        });
+      }
     }
   });
 
@@ -81,9 +88,10 @@ export default function SignUpPage() {
               </div>
               <TextInput
                 id="email"
+                autoLowercase
                 placeholder="Email*"
                 additionalValidation={{
-                  required: { value: true },
+                  required: { value: true, message: "Email is required." },
                   pattern: {
                     value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
                     message: "Incorrect email format.",
@@ -115,7 +123,10 @@ export default function SignUpPage() {
                 id="re_password"
                 placeholder="Re-Password*"
                 additionalValidation={{
-                  required: { value: true },
+                  required: {
+                    value: true,
+                    message: "Re-Password is required.",
+                  },
                   validate: (value: string) =>
                     value === watch("password") || "Password do not match!",
                 }}

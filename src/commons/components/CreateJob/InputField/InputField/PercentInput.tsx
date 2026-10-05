@@ -34,7 +34,7 @@ export default function PercentInput({
   } = useFormContext();
 
   useEffect(() => {
-    setValue(id, currentValue);
+    setValue(id, currentValue, { shouldValidate: true });
   }, []);
 
   const currentValue = (() => {
@@ -87,7 +87,7 @@ export default function PercentInput({
       }
     }
 
-    setLocalValue(`${inputValue}%`);
+    setLocalValue(inputValue === "" ? "" : `${inputValue}%`);
     const updatedCursorPosition = Math.min(cursorPosition, inputValue.length);
     requestAnimationFrame(() => {
       e.target.setSelectionRange(updatedCursorPosition, updatedCursorPosition);
@@ -100,7 +100,9 @@ export default function PercentInput({
     const formattedValue = formatValue(value);
 
     setLocalValue(formattedValue);
-    setValue(id, isNaN(numericValue) ? defaultValue : numericValue);
+    setValue(id, isNaN(numericValue) ? defaultValue : numericValue, {
+      shouldValidate: true,
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -109,7 +111,9 @@ export default function PercentInput({
       const formattedValue = formatValue(localValue);
 
       setLocalValue(formattedValue);
-      setValue(id, isNaN(numericValue) ? defaultValue : numericValue);
+      setValue(id, isNaN(numericValue) ? defaultValue : numericValue, {
+        shouldValidate: true,
+      });
     }
   };
 
@@ -119,7 +123,7 @@ export default function PercentInput({
     const newValue = Math.min(100, numericValue + 1);
 
     setLocalValue(`${newValue.toFixed(2)}%`);
-    setValue(id, newValue);
+    setValue(id, newValue, { shouldValidate: true });
   };
 
   const handleDecrease = (e: React.MouseEvent) => {
@@ -128,7 +132,7 @@ export default function PercentInput({
     const newValue = Math.max(0, numericValue - 1);
 
     setLocalValue(`${newValue.toFixed(2)}%`);
-    setValue(id, newValue);
+    setValue(id, newValue, { shouldValidate: true });
   };
 
   return (
@@ -141,57 +145,67 @@ export default function PercentInput({
               ? "flex flex-row justify-between max-w-[1000px]"
               : "grid grid-cols-[1fr,4fr] max-w-[1000px]"
         }
-         min-w-fit space-x-3 items-center`}
+         min-w-fit space-x-3 items-start`}
     >
-      <label className="font-light">{label}:</label>
+      <label className="font-light">
+        {label}
+        {typeof additionalValidation?.required === "object" &&
+          additionalValidation.required.value && (
+            <span className="text-red-500">*</span>
+          )}
+        :
+      </label>
       {!onEdit ? (
         <div className="w-24 text-start">{localValue}</div>
       ) : (
-        <div className="relative w-fit min-w-fit">
-          <input
-            id={id}
-            type="text"
-            value={localValue}
-            onKeyDown={handleKeyDown}
-            {...register(id, {
-              ...(additionalValidation || {}),
-              onChange: (e) => {
-                handleInputChange(e);
-              },
-              valueAsNumber: true,
-              onBlur: handleBlur,
-            })}
-            className={clsx(
-              "h-[40px] w-24 p-2 bg-white border text-sm border-pep-gray-border font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
-              {
-                "border-error": !!errors[id],
-                "border-gray-border": !errors[id],
-              },
-              className,
+        <div className="w-fit min-w-fit">
+          <div className="relative w-fit min-w-fit mb-5">
+            <input
+              id={id}
+              type="text"
+              value={localValue}
+              onKeyDown={handleKeyDown}
+              {...register(id, {
+                ...(additionalValidation || {}),
+                onChange: (e) => {
+                  handleInputChange(e);
+                },
+                valueAsNumber: true,
+                onBlur: handleBlur,
+              })}
+              className={clsx(
+                "h-[40px] w-24 p-2 bg-white border text-sm border-pep-gray-border font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
+                {
+                  "border-error": !!errors[id],
+                  "border-gray-border": !errors[id],
+                },
+                className,
+              )}
+              disabled={disabled}
+              autoComplete="off"
+              aria-label={`Percentage input for ${id}`}
+            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex flex-col gap-1">
+              {/* Increase button */}
+              <Icon
+                icon="mingcute:up-line"
+                className="text-pep-dark-gray size-[15px] hover:text-pep-gray cursor-pointer"
+                onClick={handleIncrease}
+              />
+              {/* Decrease button */}
+              <Icon
+                icon="mingcute:down-line"
+                className="text-pep-dark-gray size-[15px] hover:text-pep-gray cursor-pointer"
+                onClick={handleDecrease}
+              />
+            </div>
+
+            {errors[id]?.message && (
+              <span className="absolute left-0 top-full mt-1 whitespace-nowrap font-light text-error text-xs">
+                {errors[id]?.message as string}
+              </span>
             )}
-            disabled={disabled}
-            autoComplete="off"
-            aria-label={`Percentage input for ${id}`}
-          />
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex flex-col gap-1">
-            {/* Increase button */}
-            <Icon
-              icon="mingcute:up-line"
-              className="text-pep-dark-gray size-[15px] hover:text-pep-gray cursor-pointer"
-              onClick={handleIncrease}
-            />
-            {/* Decrease button */}
-            <Icon
-              icon="mingcute:down-line"
-              className="text-pep-dark-gray size-[15px] hover:text-pep-gray cursor-pointer"
-              onClick={handleDecrease}
-            />
           </div>
-          {errors[id]?.message && (
-            <span className="font-light text-error text-xs">
-              {errors[id]?.message as string}
-            </span>
-          )}
         </div>
       )}
     </div>

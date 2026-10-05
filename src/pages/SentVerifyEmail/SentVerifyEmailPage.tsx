@@ -1,19 +1,20 @@
 import sentVerify from "../../assets/images/sentVerifyEmail/sentVerification.svg";
 import ResendModal from "./components/ResendModal";
 import { sendVerification } from "../../commons/api/auth";
-import { useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 export default function SentVerificationPage() {
   const location = useLocation();
   const { email } = location.state || {};
+
+  if (!email) {
+    return <Navigate to="/sign-in" replace />;
+  }
+
   const resendEmail = async () => {
-    try {
-      console.log(`resend email ${email}`);
-      await sendVerification(email);
-    } catch (error: unknown) {
-      console.error(error);
-    }
+    await sendVerification(email);
   };
+
   return (
     <div className="flex h-screen min-h-fit items-center justify-center py-8 px-4">
       <div className="w-[60%] min-w-fit h-[80%] min-h-fit bg-white rounded-xl py-6 px-8 shadow-dropShadow text-center">
