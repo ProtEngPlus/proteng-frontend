@@ -30,18 +30,27 @@ export default function DropdownInput({
   return (
     <div
       className={`
-      ${formatInput === 2 ? "w-full" : "w-[40%]"} 
+      ${formatInput === 1 ? "w-[40%]" : "w-full"}
         min-w-fit`}
     >
       <div
         className={`
         ${
           formatInput === 2
-            ? "flex flex-row justify-between max-w-[1000px] min-w-fit space-x-3 items-center"
-            : "min-w-fit justify-between items-center space-x-3 grid grid-cols-[1fr,4fr] max-w-[1000px]"
+            ? "flex flex-row justify-between max-w-[1000px] min-w-fit space-x-3 items-start"
+            : formatInput === 4
+              ? "min-w-fit items-start space-x-3 grid grid-cols-[1fr,2fr] max-w-[1000px]"
+              : "min-w-fit justify-between items-start space-x-3 grid grid-cols-[1fr,4fr] max-w-[1000px]"
         }`}
       >
-        <label className="font-light w-[40%]">{label}:</label>
+        <label className={`font-light ${formatInput === 1 ? "w-[40%]" : ""}`}>
+          {label}
+          {typeof additionalValidation?.required === "object" &&
+            additionalValidation.required.value && (
+              <span className="text-red-500">*</span>
+            )}
+          :
+        </label>
         <SelectInput
           id={id}
           defaultValue={defaultValue}

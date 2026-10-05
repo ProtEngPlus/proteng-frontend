@@ -95,7 +95,7 @@ export default function ChangePasswordPage() {
           label="Current Password"
           placeholder="Current Password*"
           additionalValidation={{
-            required: { value: true },
+            required: { value: true, message: "Current Password is required." },
           }}
         />
 
@@ -104,7 +104,7 @@ export default function ChangePasswordPage() {
           label="New Password"
           placeholder="New Password*"
           additionalValidation={{
-            required: { value: true },
+            required: { value: true, message: "New Password is required." },
           }}
         />
 
@@ -113,7 +113,10 @@ export default function ChangePasswordPage() {
           label="Confirm New Password"
           placeholder="Confirm New Password*"
           additionalValidation={{
-            required: { value: true },
+            required: {
+              value: true,
+              message: "Confirm New Password is required.",
+            },
           }}
         />
 

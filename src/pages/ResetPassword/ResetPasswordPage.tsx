@@ -1,7 +1,7 @@
 import logoWithText from "../../assets/images/LogoWithText/logoWithText.svg";
 import PasswordInput from "../../commons/components/Input/PasswordInput";
 import Button from "../../commons/components/Button/Button";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { resetPassword } from "../../commons/api/auth";
 
@@ -12,11 +12,20 @@ type FormValues = {
 
 export default function ResetPasswordPage() {
   const form = useForm<FormValues>();
-  const { handleSubmit, watch } = form;
+  const {
+    handleSubmit,
+    watch,
+    setError,
+    formState: { isSubmitting },
+  } = form;
   const navigate = useNavigate();
 
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token");
+
+  if (!token) {
+    return <Navigate to="/forget-password" replace />;
+  }
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -24,12 +33,17 @@ export default function ResetPasswordPage() {
       navigate("/sign-in");
     } catch (error: unknown) {
       console.error(error);
+      setError("new_password", {
+        type: "manual",
+        message:
+          "This reset link is invalid or has expired. Please request a new one.",
+      });
     }
   });
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="w-[28%] min-w-fit h-auto py-6 px-4 m-auto bg-white rounded-xl shadow-dropShadow">
+      <div className="w-[36%] min-w-[440px] h-auto py-10 px-8 m-auto bg-white rounded-xl shadow-dropShadow">
         <img
           src={logoWithText}
           alt="logo-with-text"
@@ -47,7 +61,7 @@ export default function ResetPasswordPage() {
               id="new_password"
               placeholder="New Password"
               additionalValidation={{
-                required: { value: true },
+                required: { value: true, message: "New Password is required." },
                 validate: (value: string) =>
                   value === watch("confirm_new_password"),
               }}
@@ -57,18 +71,21 @@ export default function ResetPasswordPage() {
               id="confirm_new_password"
               placeholder="Confirm New Password"
               additionalValidation={{
-                required: { value: true },
+                required: {
+                  value: true,
+                  message: "Confirm New Password is required.",
+                },
                 validate: (value: string) =>
                   value === watch("new_password") || "Password do not match!",
               }}
             />
             <Button
               id="reset-password"
-              type="submit"
               buttonType="submit"
-              text="Reset Password"
+              type="submit"
+              text={isSubmitting ? "Please wait..." : "Reset Password"}
               className="w-full"
-              onClick={onSubmit}
+              disabled={isSubmitting}
             />
           </form>
         </FormProvider>

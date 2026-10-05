@@ -7,8 +7,9 @@ import { useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Role, UserRole } from "../../commons/interfaces/User.interface";
-import { createUser } from "../../commons/api/user";
-import { sendVerification } from "../../commons/api/auth";
+import { register } from "../../commons/api/auth";
+import { normalizeEmail } from "../../commons/utils/normalizeEmail";
+import axios from "axios";
 
 type FormValues = {
   email: string;
@@ -21,12 +22,18 @@ type FormValues = {
 
 export default function SignUpPage() {
   const form = useForm<FormValues>();
-  const { handleSubmit, setError, watch } = form;
+  const {
+    handleSubmit,
+    setError,
+    watch,
+    formState: { isSubmitting },
+  } = form;
   const navigate = useNavigate();
 
   const onSubmit = handleSubmit(async (data) => {
+    const email = normalizeEmail(data.email);
     const userData = {
-      email: data.email,
+      email,
       password: data.password,
       name: data.name,
       surname: data.surname,
@@ -35,21 +42,27 @@ export default function SignUpPage() {
     };
 
     try {
-      await createUser(userData);
-      await sendVerification(data.email);
-      navigate("/sent-verification-email", { state: { email: data.email } });
+      await register(userData);
+      navigate("/sent-verification-email", { state: { email } });
     } catch (error: unknown) {
       console.error(error);
-      setError("email", {
-        type: "manual",
-        message: "Email is already registered.",
-      });
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        setError("email", {
+          type: "manual",
+          message: "Email is already registered.",
+        });
+      } else {
+        setError("email", {
+          type: "manual",
+          message: "Could not create your account. Please try again.",
+        });
+      }
     }
   });
 
   return (
-    <div className="flex h-screen min-h-fit items-end justify-center">
-      <div className="w-[75%] min-w-fit h-[85%] min-h-fit mt-[15%] bg-white rounded-t-xl py-6 px-10 shadow-dropShadow">
+    <div className="flex h-screen min-h-fit items-center justify-center py-8">
+      <div className="w-[80%] min-w-fit h-[80%] min-h-fit bg-white rounded-xl py-6 px-8 shadow-dropShadow">
         {/* Logo */}
         <div className="relative flex justify-end mx-2">
           <img src={logo} alt="Logo" className="absolute h-36" />
@@ -72,9 +85,10 @@ export default function SignUpPage() {
               </div>
               <TextInput
                 id="email"
+                autoLowercase
                 placeholder="Email*"
                 additionalValidation={{
-                  required: { value: true },
+                  required: { value: true, message: "Email is required." },
                   pattern: {
                     value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
                     message: "Incorrect email format.",
@@ -90,7 +104,7 @@ export default function SignUpPage() {
                 id="password"
                 placeholder="Password*"
                 additionalValidation={{
-                  required: { value: true },
+                  required: { value: true, message: "Password is required." },
                   validate: (value: string) => value === watch("re_password"),
                 }}
               />
@@ -103,7 +117,10 @@ export default function SignUpPage() {
                 id="re_password"
                 placeholder="Re-Password*"
                 additionalValidation={{
-                  required: { value: true },
+                  required: {
+                    value: true,
+                    message: "Re-Password is required.",
+                  },
                   validate: (value: string) =>
                     value === watch("password") || "Password do not match!",
                 }}
@@ -154,7 +171,8 @@ export default function SignUpPage() {
                 id="submit-sign-up"
                 buttonType="submit"
                 type="submit"
-                text="Create Account"
+                text={isSubmitting ? "Please wait..." : "Create Account"}
+                disabled={isSubmitting}
                 className="w-[11.875rem] px-7 py-3.5"
               />
             </div>

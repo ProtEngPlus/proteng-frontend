@@ -37,24 +37,30 @@ export default function RangeNumberInput({
   const currentValueHigh = watch(`${id}_high`) ?? defaultHigh;
 
   useEffect(() => {
-    setValue(`${id}_low`, watch(`${id}_low`) || defaultLow || undefined);
-    setValue(`${id}_high`, watch(`${id}_high`) || defaultHigh || undefined);
+    setValue(`${id}_low`, watch(`${id}_low`) || defaultLow || undefined, {
+      shouldValidate: true,
+    });
+    setValue(`${id}_high`, watch(`${id}_high`) || defaultHigh || undefined, {
+      shouldValidate: true,
+    });
   }, [defaultLow, defaultHigh, id, setValue]);
 
   const handleIncrease = (field: string) => {
     const currentValue = parseFloat(getValues(field)) || 0;
-    setValue(field, Number(currentValue + 1));
+    setValue(field, Number(currentValue + 1), { shouldValidate: true });
   };
 
   const handleDecrease = (field: string) => {
     const currentValue = parseFloat(getValues(field)) || 0;
-    setValue(field, Math.max(0, currentValue - 1));
+    setValue(field, Math.max(0, currentValue - 1), { shouldValidate: true });
   };
 
   const handleBlur = (field: string, defaultValue: number | undefined) => {
     const currentValue = parseFloat(getValues(field));
     if (isNaN(currentValue)) {
-      setValue(field, Number(defaultValue) || undefined);
+      setValue(field, Number(defaultValue) || undefined, {
+        shouldValidate: true,
+      });
     }
   };
 
@@ -68,8 +74,14 @@ export default function RangeNumberInput({
           </div>
         </div>
       ) : (
-        <div className="space-y-2 w-fit">
-          <label className="font-light leading-loose">{label}</label>
+        <div className="relative space-y-2 w-fit mb-5">
+          <label className="font-light leading-loose">
+            {label}
+            {typeof additionalValidation?.required === "object" &&
+              additionalValidation.required.value && (
+                <span className="text-red-500">*</span>
+              )}
+          </label>
           <div className="flex gap-3 items-center">
             {/*----------------------------------- Min Input ------------------------------------------*/}
 
@@ -145,6 +157,11 @@ export default function RangeNumberInput({
                 {...register(`${id}_high`, {
                   ...(additionalValidation || {}),
                   validate: (value: string) => {
+                    const extra = additionalValidation?.validate;
+                    if (typeof extra === "function") {
+                      const result = extra(value);
+                      if (result !== true) return result;
+                    }
                     const min = parseFloat(watch(`${id}_low`)) || 0;
                     const max = parseFloat(value) || 0;
                     if (min > max) {
@@ -206,6 +223,15 @@ export default function RangeNumberInput({
               </div>
             </div>
           </div>
+
+          {(errors[`${id}_low`]?.message || errors[`${id}_high`]?.message) && (
+            <span className="absolute left-0 top-full mt-1 whitespace-nowrap font-light text-error text-xs">
+              {
+                (errors[`${id}_low`]?.message ||
+                  errors[`${id}_high`]?.message) as string
+              }
+            </span>
+          )}
         </div>
       )}
     </div>
