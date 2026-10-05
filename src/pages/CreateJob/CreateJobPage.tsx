@@ -77,6 +77,7 @@ export default function CreateJobPage() {
   }, [isWithConfig, initialStep, jobDetail]);
 
   const form = useForm({
+    mode: "onChange",
     defaultValues: {
       file_name: "",
       input_protein_field: jobDetail.input_protein,
@@ -167,7 +168,10 @@ export default function CreateJobPage() {
                     Number(data[`${param.id}_low`]);
                   newJobOption[subMethod.toLowerCase()][`${param.id}_high`] =
                     Number(data[`${param.id}_high`]);
-                } else if (param.id === "cov_mode") {
+                } else if (
+                  param.type === "dropdown" &&
+                  typeof param.default === "number"
+                ) {
                   newJobOption[subMethod.toLowerCase()][param.id] = Number(
                     data[param.id],
                   );

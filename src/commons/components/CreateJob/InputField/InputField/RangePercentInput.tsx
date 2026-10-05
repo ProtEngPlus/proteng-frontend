@@ -37,8 +37,12 @@ export default function RangePercentInput({
   const currentValueHigh = watch(`${id}_high`) ?? defaultHigh ?? undefined;
 
   useEffect(() => {
-    setValue(`${id}_low`, watch(`${id}_low`) || defaultLow || undefined);
-    setValue(`${id}_high`, watch(`${id}_high`) || defaultHigh || undefined);
+    setValue(`${id}_low`, watch(`${id}_low`) || defaultLow || undefined, {
+      shouldValidate: true,
+    });
+    setValue(`${id}_high`, watch(`${id}_high`) || defaultHigh || undefined, {
+      shouldValidate: true,
+    });
   }, [defaultLow, defaultHigh, id, setValue]);
 
   // Local state for formatted values
@@ -97,9 +101,9 @@ export default function RangePercentInput({
     }
 
     if (field === `${id}_low`) {
-      setLocalLow(`${inputValue}%`);
+      setLocalLow(inputValue === "" ? "" : `${inputValue}%`);
     } else {
-      setLocalHigh(`${inputValue}%`);
+      setLocalHigh(inputValue === "" ? "" : `${inputValue}%`);
     }
 
     const updatedCursorPosition = Math.min(cursorPosition, inputValue.length);
@@ -115,10 +119,14 @@ export default function RangePercentInput({
 
     if (field === `${id}_low`) {
       setLocalLow(formattedValue);
-      setValue(field, isNaN(numericValue) ? defaultLow : numericValue);
+      setValue(field, isNaN(numericValue) ? defaultLow : numericValue, {
+        shouldValidate: true,
+      });
     } else {
       setLocalHigh(formattedValue);
-      setValue(field, isNaN(numericValue) ? defaultHigh : numericValue);
+      setValue(field, isNaN(numericValue) ? defaultHigh : numericValue, {
+        shouldValidate: true,
+      });
     }
   };
 
@@ -133,10 +141,14 @@ export default function RangePercentInput({
 
       if (field === `${id}_low`) {
         setLocalLow(formattedValue);
-        setValue(field, isNaN(numericValue) ? defaultLow : numericValue);
+        setValue(field, isNaN(numericValue) ? defaultLow : numericValue, {
+          shouldValidate: true,
+        });
       } else {
         setLocalHigh(formattedValue);
-        setValue(field, isNaN(numericValue) ? defaultHigh : numericValue);
+        setValue(field, isNaN(numericValue) ? defaultHigh : numericValue, {
+          shouldValidate: true,
+        });
       }
     }
   };
@@ -150,7 +162,7 @@ export default function RangePercentInput({
     } else {
       setLocalHigh(`${newValue.toFixed(2)}%`);
     }
-    setValue(field, newValue);
+    setValue(field, newValue, { shouldValidate: true });
   };
 
   const handleDecrease = (field: string) => {
@@ -162,7 +174,7 @@ export default function RangePercentInput({
     } else {
       setLocalHigh(`${newValue.toFixed(2)}%`);
     }
-    setValue(field, newValue);
+    setValue(field, newValue, { shouldValidate: true });
   };
 
   return (
@@ -175,8 +187,14 @@ export default function RangePercentInput({
           </div>
         </div>
       ) : (
-        <div className="space-y-2 w-fit">
-          <label className="font-light leading-loose">{label}</label>
+        <div className="relative space-y-2 w-fit mb-5">
+          <label className="font-light leading-loose">
+            {label}
+            {typeof additionalValidation?.required === "object" &&
+              additionalValidation.required.value && (
+                <span className="text-red-500">*</span>
+              )}
+          </label>
           <div className="flex gap-3 items-center">
             {/*----------------------------------- Min Input ------------------------------------------*/}
             <div className="relative w-fit min-w-fit">
@@ -196,8 +214,8 @@ export default function RangePercentInput({
                 className={clsx(
                   "h-[40px] w-24 p-2 bg-white border text-sm border-pep-gray-border font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
                   {
-                    "border-error": !!errors[`${id}_high`],
-                    "border-gray-border": !errors[`${id}_high`],
+                    "border-error": !!errors[`${id}_low`],
+                    "border-gray-border": !errors[`${id}_low`],
                   },
                   className,
                 )}
@@ -232,6 +250,11 @@ export default function RangePercentInput({
                 {...register(`${id}_high`, {
                   ...(additionalValidation || {}),
                   validate: (value: string) => {
+                    const extra = additionalValidation?.validate;
+                    if (typeof extra === "function") {
+                      const result = extra(value);
+                      if (result !== true) return result;
+                    }
                     const min = parseFloat(watch(`${id}_low`)) || 0;
                     const max = parseFloat(value) || 0;
                     if (min > max) {
@@ -271,13 +294,16 @@ export default function RangePercentInput({
                 />
               </div>
             </div>
-
-            {errors[`${id}_high`]?.message && (
-              <span className="font-light text-error text-xs">
-                {errors[`${id}_high`]?.message as string}
-              </span>
-            )}
           </div>
+
+          {(errors[`${id}_low`]?.message || errors[`${id}_high`]?.message) && (
+            <span className="absolute left-0 top-full mt-1 whitespace-nowrap font-light text-error text-xs">
+              {
+                (errors[`${id}_low`]?.message ||
+                  errors[`${id}_high`]?.message) as string
+              }
+            </span>
+          )}
         </div>
       )}
     </div>
