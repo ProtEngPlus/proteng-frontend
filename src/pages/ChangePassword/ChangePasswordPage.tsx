@@ -109,7 +109,7 @@ export default function ChangePasswordPage() {
           placeholder="New Password*"
           hint={passwordPolicyHint}
           additionalValidation={{
-            required: { value: true },
+            required: { value: true, message: "New Password is required." },
             ...passwordPolicyValidation,
           }}
         />

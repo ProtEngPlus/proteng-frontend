@@ -7,8 +7,9 @@ import { useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Role, UserRole } from "../../commons/interfaces/User.interface";
-import { createUser } from "../../commons/api/user";
-import { sendVerification } from "../../commons/api/auth";
+import { register } from "../../commons/api/auth";
+import { normalizeEmail } from "../../commons/utils/normalizeEmail";
+import axios from "axios";
 import {
   passwordPolicyHint,
   passwordPolicyValidation,
@@ -109,7 +110,7 @@ export default function SignUpPage() {
                 placeholder="Password*"
                 hint={passwordPolicyHint}
                 additionalValidation={{
-                  required: { value: true },
+                  required: { value: true, message: "Password is required." },
                   ...passwordPolicyValidation,
                   validate: (value: string) => value === watch("re_password"),
                 }}

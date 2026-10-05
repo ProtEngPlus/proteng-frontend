@@ -66,7 +66,7 @@ export default function ResetPasswordPage() {
               placeholder="New Password"
               hint={passwordPolicyHint}
               additionalValidation={{
-                required: { value: true },
+                required: { value: true, message: "New Password is required." },
                 ...passwordPolicyValidation,
                 validate: (value: string) =>
                   value === watch("confirm_new_password"),
