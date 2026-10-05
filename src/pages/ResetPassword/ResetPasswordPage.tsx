@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
               id="new_password"
               placeholder="New Password"
               additionalValidation={{
-                required: { value: true },
+                required: { value: true, message: "New Password is required." },
                 validate: (value: string) =>
                   value === watch("confirm_new_password"),
               }}
@@ -57,7 +57,10 @@ export default function ResetPasswordPage() {
               id="confirm_new_password"
               placeholder="Confirm New Password"
               additionalValidation={{
-                required: { value: true },
+                required: {
+                  value: true,
+                  message: "Confirm New Password is required.",
+                },
                 validate: (value: string) =>
                   value === watch("new_password") || "Password do not match!",
               }}

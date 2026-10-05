@@ -83,7 +83,7 @@ export default function SignUpPage() {
                 autoLowercase
                 placeholder="Email*"
                 additionalValidation={{
-                  required: { value: true },
+                  required: { value: true, message: "Email is required." },
                   pattern: {
                     value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
                     message: "Incorrect email format.",
@@ -99,7 +99,7 @@ export default function SignUpPage() {
                 id="password"
                 placeholder="Password*"
                 additionalValidation={{
-                  required: { value: true },
+                  required: { value: true, message: "Password is required." },
                   validate: (value: string) => value === watch("re_password"),
                 }}
               />
@@ -112,7 +112,10 @@ export default function SignUpPage() {
                 id="re_password"
                 placeholder="Re-Password*"
                 additionalValidation={{
-                  required: { value: true },
+                  required: {
+                    value: true,
+                    message: "Re-Password is required.",
+                  },
                   validate: (value: string) =>
                     value === watch("password") || "Password do not match!",
                 }}
