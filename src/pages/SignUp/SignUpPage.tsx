@@ -7,9 +7,9 @@ import { useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Role, UserRole } from "../../commons/interfaces/User.interface";
-import { createUser } from "../../commons/api/user";
-import { sendVerification } from "../../commons/api/auth";
+import { register } from "../../commons/api/auth";
 import { normalizeEmail } from "../../commons/utils/normalizeEmail";
+import axios from "axios";
 
 type FormValues = {
   email: string;
@@ -37,15 +37,21 @@ export default function SignUpPage() {
     };
 
     try {
-      await createUser(userData);
-      await sendVerification(email);
+      await register(userData);
       navigate("/sent-verification-email", { state: { email } });
     } catch (error: unknown) {
       console.error(error);
-      setError("email", {
-        type: "manual",
-        message: "Email is already registered.",
-      });
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        setError("email", {
+          type: "manual",
+          message: "Email is already registered.",
+        });
+      } else {
+        setError("email", {
+          type: "manual",
+          message: "Could not create your account. Please try again.",
+        });
+      }
     }
   });
 
