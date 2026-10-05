@@ -12,13 +12,9 @@ export default function SentVerificationPage() {
   }
 
   const resendEmail = async () => {
-    try {
-      console.log(`resend email ${email}`);
-      await sendVerification(email);
-    } catch (error: unknown) {
-      console.error(error);
-    }
+    await sendVerification(email);
   };
+
   return (
     <div className="flex h-screen min-h-fit items-center justify-center py-8 px-4">
       <div className="w-[60%] min-w-fit h-[80%] min-h-fit bg-white rounded-xl py-6 px-8 shadow-dropShadow text-center">
