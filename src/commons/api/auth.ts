@@ -4,12 +4,17 @@ import {
   ApiErrorResponse,
   ApiResponse,
 } from "../interfaces/ApiResponse.interface";
-import { UserLogin } from "../interfaces/User.interface";
-import { get, patch } from "./common";
+import { UserLogin, UserRegister } from "../interfaces/User.interface";
+import { get, patch, post } from "./common";
 import { isResponseOk } from "./utils";
 import { addHoursToDate } from "../utils/utils";
 
 /*------------------------- login-logout section -------------------------------------*/
+
+export const register = async (user: UserRegister) => {
+  const path = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/register";
+  return await post<UserRegister>(path, user);
+};
 
 export const login = async (email: string, password: string, role: string) => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/login";

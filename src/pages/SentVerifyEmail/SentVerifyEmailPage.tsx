@@ -1,11 +1,16 @@
 import sentVerify from "../../assets/images/sentVerifyEmail/sentVerification.svg";
 import ResendModal from "./components/ResendModal";
 import { sendVerification } from "../../commons/api/auth";
-import { useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 export default function SentVerificationPage() {
   const location = useLocation();
   const { email } = location.state || {};
+
+  if (!email) {
+    return <Navigate to="/sign-in" replace />;
+  }
+
   const resendEmail = async () => {
     try {
       console.log(`resend email ${email}`);
