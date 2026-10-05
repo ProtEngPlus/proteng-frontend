@@ -30,6 +30,7 @@ export default function ChangePasswordPage() {
   const navigate = useNavigate();
 
   const [isConfirmVisible, setConfirmVisible] = useState(false);
+  const [isSaving, setSaving] = useState(false);
   const ConfirmProps: ConfirmOverlayProps = {
     id: "confirm-change-password",
     onClose: () => {
@@ -39,6 +40,7 @@ export default function ChangePasswordPage() {
       setConfirmVisible(false);
       const current_password = watch("current_password");
       const new_password = watch("new_password");
+      setSaving(true);
       try {
         await changePassword(current_password, new_password);
         setSuccessVisible(true);
@@ -48,6 +50,8 @@ export default function ChangePasswordPage() {
           type: "manual",
           message: "Incorrect Password",
         });
+      } finally {
+        setSaving(false);
       }
     },
     title: "Do you want to change the password?",
@@ -133,13 +137,15 @@ export default function ChangePasswordPage() {
             type="button"
             text="Cancel"
             onClick={() => navigate("/account-management")}
+            disabled={isSaving}
           />
 
           <Button
             id="change-password"
             buttonType="submit"
-            text="Save"
+            text={isSaving ? "Please wait..." : "Save"}
             type="submit"
+            disabled={isSaving}
           />
         </div>
       </form>
