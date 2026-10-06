@@ -394,6 +394,28 @@ function StatCard({
   );
 }
 
+function axisRange(values: number[]) {
+  if (!values.length) return { low: 0, high: 1, ticks: 5, decimals: 1 };
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || Math.abs(max) || 1;
+  const power = Math.floor(Math.log10(span / 5));
+  const base = 10 ** power;
+  const scale = [1, 2, 2.5, 5, 10].find((m) => m * base >= span / 5)!;
+  const step = scale * base;
+  const decimals = Math.max(0, -power + (scale === 2.5 ? 1 : 0));
+  let low = Math.floor(min / step) * step;
+  let high = Math.ceil(max / step) * step;
+  if (low === min) low -= step;
+  if (high === max) high += step;
+  return {
+    low: +low.toFixed(decimals),
+    high: +high.toFixed(decimals),
+    ticks: Math.round((high - low) / step),
+    decimals,
+  };
+}
+
 function PredictedActualChart({
   names,
   predicted,
@@ -403,11 +425,7 @@ function PredictedActualChart({
   predicted: number[];
   actual: number[];
 }) {
-  const all = predicted.concat(actual);
-  const low = all.length ? Math.floor(Math.min(...all) * 2) / 2 : 0;
-  const high = all.length
-    ? Math.max(Math.ceil(Math.max(...all) * 2) / 2, low + 0.5)
-    : 1;
+  const { low, high, ticks, decimals } = axisRange(predicted.concat(actual));
 
   const series: ApexAxisChartSeries = predicted.length
     ? [
@@ -441,16 +459,17 @@ function PredictedActualChart({
     grid: { borderColor: "#F1F1F1", strokeDashArray: 3 },
     xaxis: {
       type: "numeric",
-      tickAmount: Math.round((high - low) * 2),
+      tickAmount: ticks,
       min: low,
       max: high,
-      decimalsInFloat: 1,
+      decimalsInFloat: decimals,
       title: { text: "Predicted assay score" },
     },
     yaxis: {
+      tickAmount: ticks,
       min: low,
       max: high,
-      decimalsInFloat: 1,
+      decimalsInFloat: decimals,
       title: { text: "Actual assay score" },
     },
     legend: { position: "bottom", horizontalAlign: "left" },
