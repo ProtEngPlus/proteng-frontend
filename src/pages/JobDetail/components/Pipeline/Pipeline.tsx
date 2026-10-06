@@ -1,6 +1,6 @@
 import { pdf } from "@react-pdf/renderer";
 import html2canvas from "html2canvas";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Stepper from "../../../../commons/components/JobDetail/Stepper/Stepper";
 import {
   JobInterface,
@@ -243,12 +243,30 @@ export default function Pipeline({
   const runType = watch("run_type");
   const isNotificationOn = watch("is_notification_on");
 
+  // last values saved on the job, so loading the page does not write and bump updated_at
+  const savedSettings = useRef({
+    run_type: job.run_type,
+    is_notification_on: job.is_notification_on,
+  });
+
   useEffect(() => {
+    if (runType === undefined || isNotificationOn === undefined) return;
+    const saved = savedSettings.current;
+    if (
+      runType === saved.run_type &&
+      isNotificationOn === saved.is_notification_on
+    )
+      return;
+
     const updateJob = async () => {
       await updateJobDetail(job.id, {
         run_type: runType,
         is_notification_on: isNotificationOn,
       });
+      savedSettings.current = {
+        run_type: runType,
+        is_notification_on: isNotificationOn,
+      };
     };
 
     updateJob();
