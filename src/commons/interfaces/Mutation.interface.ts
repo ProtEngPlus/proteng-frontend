@@ -61,3 +61,20 @@ export interface MutationResultInterface {
   assay_score: number;
   is_bookmark: boolean;
 }
+
+export interface ExperimentalResultInterface {
+  id: string;
+  mutation_result_id: string;
+  mutation_id: string;
+  job_id: string;
+  user_id: string;
+  actual_assay_score: number;
+  note: string;
+  measured_at: string;
+}
+
+export interface ExperimentalResultInput {
+  actual_assay_score: number;
+  note: string;
+  measured_at?: string;
+}
