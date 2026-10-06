@@ -4,6 +4,7 @@ import SignInApp from "../pages/SignIn/SignInApp";
 import SignUpApp from "../pages/SignUp/SignUpApp";
 import ForgetPasswordApp from "../pages/ForgetPassword/ForgetPasswordApp";
 import ResetPasswordApp from "../pages/ResetPassword/ResetPasswordApp";
+import SentResetPasswordApp from "../pages/SentResetPassword/SentResetPasswordApp";
 import SentVerifyEmailApp from "../pages/SentVerifyEmail/SentVerifyEmailApp";
 import SuccessVerifyEmailApp from "../pages/SuccessVerifyEmail/SuccessVerifyEmailApp";
 import DashboardApp from "../pages/Dashboard/DashboardApp";
@@ -28,6 +29,10 @@ const pagesData = [
   {
     path: "/reset-password",
     element: <ResetPasswordApp />,
+  },
+  {
+    path: "/sent-reset-password-email",
+    element: <SentResetPasswordApp />,
   },
   {
     path: "/sign-up",
