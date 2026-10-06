@@ -16,7 +16,7 @@ export interface MutationInterface {
   job_id: string;
   run_id: number;
   input_protein: string;
-  options: string;
+  options: Record<string, OptionValue>;
   tool: string;
   state: MutationStateType;
   is_bookmark: boolean;

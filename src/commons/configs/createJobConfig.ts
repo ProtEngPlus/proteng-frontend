@@ -97,9 +97,10 @@ export interface MethodParameter {
     | "multiNumberDropdown"
     | "boolean"
     | RunType
-    | "rangePercent";
+    | "rangePercent"
+    | "regionList";
   description: string;
-  default?: string | number | number[] | boolean | RunType;
+  default?: string | number | number[] | number[][] | boolean | RunType;
   low?: number;
   high?: number;
   dropdownItems?: string[] | number[];
@@ -654,23 +655,41 @@ export const createJobConfig: CreateJobConfig = {
             },
           },
           {
-            name: "Mutated Position Range",
-            id: "mutate_pos_range",
-            type: "number",
+            name: "Mutation Regions",
+            id: "mutate_regions",
+            type: "regionList",
             description:
-              "The range of positions from the current mutated position where the next mutation is located",
-            default: 5,
+              "The regions of the protein that are allowed to mutate, each from a start to an end position. Positions are counted from 1 and both ends are included. Leave it empty to allow the whole sequence.\nWith 2 or more regions, every region gets one trajectory that stays inside it and one more trajectory combines regions, so Number of Trajectories must be at least the number of regions plus 1.",
+            default: [],
+          },
+          {
+            name: "Number of Mutations",
+            id: "num_mutations",
+            type: "rangeNumber",
+            description:
+              "The fewest and the most positions in which a mutated protein may differ from the wild-type (the original protein). The limit covers all regions together, not each region.",
+            low: 1,
+            high: 3,
             additionalValidation: {
               required: {
                 value: true,
-                message: "Mutated Position Range is required.",
+                message: "Number of mutations is required.",
               },
               min: {
                 value: 1,
-                message: "Mutated Position Range must be at least 1.",
+                message: "Number of mutations must be at least 1.",
               },
-              validate: wholeNumber("Mutated Position Range"),
+              validate: wholeNumber("Number of mutations"),
             },
+          },
+          {
+            name: "Amino Acids",
+            id: "amino_acid_set",
+            type: "dropdown",
+            description:
+              "The amino acids a position can mutate to. 20 standard are the amino acids proteins are normally made of. U (selenocysteine) is rare in nature and needs special methods to be made in a lab.",
+            dropdownItems: ["20 standard", "20 standard + U"],
+            default: "20 standard",
           },
           {
             name: "Temperature",
