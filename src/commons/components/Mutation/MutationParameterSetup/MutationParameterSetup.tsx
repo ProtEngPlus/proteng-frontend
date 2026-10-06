@@ -14,6 +14,7 @@ import {
   createJobConfig,
   defaultPipeline,
 } from "../../../configs/createJobConfig";
+import { describeMutationOptions } from "../../../utils/mutationRegions";
 
 export default function MutationParameterSetup({
   mutation,
@@ -31,13 +32,7 @@ export default function MutationParameterSetup({
   pipeline?: PipelineItem[];
 }) {
   const [isRead, setRead] = useState(false);
-  const mutationOptions = Object.entries(mutation.options);
-  const parameterNameMapper: Record<string, string> = {
-    mutate_pos_range: "Mutate Position Range",
-    num_iterations: "Number Of Iterations",
-    num_trajectories: "Number Of Trajectories",
-    temperature: "Temperature",
-  };
+  const mutationOptions = describeMutationOptions(mutation.options);
   const { method, subMethod }: { method: string; subMethod: string } =
     pipeline && currentStep !== undefined
       ? pipeline[currentStep]
@@ -74,10 +69,10 @@ export default function MutationParameterSetup({
             <label>Collection Name:</label>
             <label className="text-pep-blue">{mutation.name}</label>
           </div>
-          {mutationOptions.map((option, index) => (
-            <div key={index} className="grid grid-cols-[4fr,5fr]">
-              <label>{parameterNameMapper[option[0]]}:</label>
-              <label>{option[1]}</label>
+          {mutationOptions.map((option) => (
+            <div key={option.label} className="grid grid-cols-[4fr,5fr]">
+              <label>{option.label}:</label>
+              <label>{option.text}</label>
             </div>
           ))}
         </div>

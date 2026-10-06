@@ -13,6 +13,7 @@ export type RangeNumberInputProps = {
   disabled?: boolean;
   additionalValidation?: Record<string, ValidationProps>;
   onEdit?: boolean;
+  formatInput?: number;
 };
 
 export default function RangeNumberInput({
@@ -24,6 +25,7 @@ export default function RangeNumberInput({
   disabled,
   additionalValidation,
   onEdit = true,
+  formatInput,
 }: RangeNumberInputProps) {
   const {
     register,
@@ -64,17 +66,37 @@ export default function RangeNumberInput({
     }
   };
 
+  // one column layouts
+  const aligned = formatInput === 3 || formatInput === 4;
+  const alignedColumns =
+    formatInput === 3 ? "grid-cols-[1fr,4fr]" : "grid-cols-[1fr,2fr]";
+
   return (
     <div className="w-full flex flex-nowrap text-nowrap">
       {!onEdit ? (
-        <div className="w-full min-w-fit flex flex-row justify-between space-x-3 items-center">
+        <div
+          className={
+            aligned
+              ? `grid ${alignedColumns} w-full max-w-[1000px] min-w-fit space-x-3 items-center`
+              : "w-full min-w-fit flex flex-row justify-between space-x-3 items-center"
+          }
+        >
           <label>{label}:</label>
           <div className="w-24 min-w-fit text-start">
-            {currentValueLow} - {currentValueHigh}
+            {Number.isFinite(Number(currentValueLow)) &&
+            Number.isFinite(Number(currentValueHigh))
+              ? `${currentValueLow} - ${currentValueHigh}`
+              : "-"}
           </div>
         </div>
       ) : (
-        <div className="relative space-y-2 w-fit mb-5">
+        <div
+          className={
+            aligned
+              ? `grid ${alignedColumns} w-full max-w-[1000px] min-w-fit gap-x-3 items-center mb-5`
+              : "space-y-2 w-fit mb-5"
+          }
+        >
           <label className="font-light leading-loose">
             {label}
             {typeof additionalValidation?.required === "object" &&
@@ -82,7 +104,7 @@ export default function RangeNumberInput({
                 <span className="text-red-500">*</span>
               )}
           </label>
-          <div className="flex gap-3 items-center">
+          <div className="relative flex gap-3 items-center">
             {/*----------------------------------- Min Input ------------------------------------------*/}
 
             <div className="relative w-fit min-w-fit">
@@ -222,16 +244,17 @@ export default function RangeNumberInput({
                 />
               </div>
             </div>
-          </div>
 
-          {(errors[`${id}_low`]?.message || errors[`${id}_high`]?.message) && (
-            <span className="absolute left-0 top-full mt-1 whitespace-nowrap font-light text-error text-xs">
-              {
-                (errors[`${id}_low`]?.message ||
-                  errors[`${id}_high`]?.message) as string
-              }
-            </span>
-          )}
+            {(errors[`${id}_low`]?.message ||
+              errors[`${id}_high`]?.message) && (
+              <span className="absolute left-0 top-full mt-1 whitespace-nowrap font-light text-error text-xs">
+                {
+                  (errors[`${id}_low`]?.message ||
+                    errors[`${id}_high`]?.message) as string
+                }
+              </span>
+            )}
+          </div>
         </div>
       )}
     </div>

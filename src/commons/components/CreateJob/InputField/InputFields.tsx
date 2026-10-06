@@ -6,6 +6,7 @@ export default function InputFields({
   jobConfig,
   disable,
   isEdit,
+  proteinLength,
 }: {
   jobValue: Record<string, MethodParameter["default"]>;
   jobConfig: {
@@ -15,17 +16,23 @@ export default function InputFields({
   };
   disable?: boolean;
   isEdit: boolean;
+  proteinLength?: number;
 }) {
   if (!jobConfig || !Array.isArray(jobConfig.parameters)) return null;
 
+  // old jobs may not have this parameter, use the default when editing
   const getFieldValue = (value: MethodParameter) => {
     if (value.type === "rangeNumber") {
+      const low =
+        jobValue[`${value.id}_low`] ?? (isEdit ? value.low : undefined);
+      const high =
+        jobValue[`${value.id}_high`] ?? (isEdit ? value.high : undefined);
       return {
-        low: Number(jobValue[`${value.id}_low`]),
-        high: Number(jobValue[`${value.id}_high`]),
+        low: low === undefined ? undefined : Number(low),
+        high: high === undefined ? undefined : Number(high),
       };
     }
-    return jobValue[value.id];
+    return jobValue[value.id] ?? (isEdit ? value.default : undefined);
   };
 
   return (
@@ -49,6 +56,7 @@ export default function InputFields({
             disable ? undefined : value.additionalValidation
           }
           formatInput={jobConfig.formatInput}
+          proteinLength={proteinLength}
         />
       ))}
     </div>
