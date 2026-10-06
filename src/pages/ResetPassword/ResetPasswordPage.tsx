@@ -53,7 +53,7 @@ export default function ResetPasswordPage() {
           alt="logo-with-text"
           className="mb-10 mx-auto"
         />
-        <h1 className="text-center mb-9">Reset Your Password ?</h1>
+        <h1 className="text-center mb-9">Reset Your Password</h1>
         <FormProvider {...form}>
           <form
             onSubmit={onSubmit}

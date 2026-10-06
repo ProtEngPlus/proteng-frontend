@@ -6,11 +6,19 @@ import { resendCooldownSeconds } from "../../../commons/configs/verificationConf
 interface ResendModalProps {
   onClick: () => Promise<void>;
   initialCooldown?: number;
+  description?: string;
+  buttonText?: string;
+  successText?: string;
+  waitText?: string;
 }
 
 export default function ResendModal({
   onClick,
   initialCooldown = 0,
+  description = "Click here to request a new verification email",
+  buttonText = "Resend Verification Email",
+  successText = "Verification email sent.",
+  waitText = "A verification email was sent recently. Please wait before requesting another one.",
 }: ResendModalProps) {
   const [secondsLeft, setSecondsLeft] = useState(initialCooldown);
   const [feedback, setFeedback] = useState<
@@ -46,19 +54,13 @@ export default function ResendModal({
     <div className="modal-container border border-[#DFE4EA] rounded-lg px-8 py-5 space-y-11 w-fit mx-auto">
       <div className="modal-content">
         <h1 className="leading-loose">Haven't receive an email yet ?</h1>
-        <label className="font-light leading-6">
-          Click here to request a new verification email
-        </label>
+        <label className="font-light leading-6">{description}</label>
       </div>
 
       <Button
         id="resend-email"
         buttonType="submit"
-        text={
-          secondsLeft > 0
-            ? `Resend in ${secondsLeft}s`
-            : "Resend Verification Email"
-        }
+        text={secondsLeft > 0 ? `Resend in ${secondsLeft}s` : buttonText}
         className="min-w-fit"
         disabled={secondsLeft > 0}
         onClick={handleResend}
@@ -66,15 +68,10 @@ export default function ResendModal({
 
       {/* Feedback Response */}
       {feedback === "success" && secondsLeft > 0 && (
-        <p className="font-normal text-pep-green text-sm">
-          Verification email sent.
-        </p>
+        <p className="font-normal text-pep-green text-sm">{successText}</p>
       )}
       {feedback === "wait" && secondsLeft > 0 && (
-        <p className="font-normal text-gray-500 text-sm">
-          A verification email was sent recently. Please wait before requesting
-          another one.
-        </p>
+        <p className="font-normal text-gray-500 text-sm">{waitText}</p>
       )}
       {feedback === "error" && (
         <p className="font-normal text-error text-sm">

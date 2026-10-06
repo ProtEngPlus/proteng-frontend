@@ -6,6 +6,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { forgotPassword } from "../../commons/api/auth";
 import { normalizeEmail } from "../../commons/utils/normalizeEmail";
+import { resendCooldownSeconds } from "../../commons/configs/verificationConfig";
 
 type FormValues = {
   email: string;
@@ -21,8 +22,11 @@ export default function ForgetPasswordPage() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await forgotPassword(normalizeEmail(data.email));
-      navigate("/sign-in");
+      const email = normalizeEmail(data.email);
+      await forgotPassword(email);
+      navigate("/sent-reset-password-email", {
+        state: { email, cooldown: resendCooldownSeconds },
+      });
     } catch (error: unknown) {
       console.error(error);
     }

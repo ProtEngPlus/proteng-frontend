@@ -79,7 +79,7 @@ export default function SelectInput({
     <div
       className={`
       ${formatInput === 2 ? "w-24 text-start" : "w-full"}
-       relative custom-select mb-5`}
+       relative custom-select`}
     >
       {!onEdit ? (
         <div>{currentValue}</div>
