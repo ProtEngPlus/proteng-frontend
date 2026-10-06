@@ -425,7 +425,10 @@ function PredictedActualChart({
   predicted: number[];
   actual: number[];
 }) {
-  const { low, high, ticks, decimals } = axisRange(predicted.concat(actual));
+  const x = axisRange(predicted);
+  const y = axisRange(actual);
+  const lineLow = Math.max(x.low, y.low);
+  const lineHigh = Math.min(x.high, y.high);
 
   const series: ApexAxisChartSeries = predicted.length
     ? [
@@ -437,10 +440,13 @@ function PredictedActualChart({
         {
           name: "y = x",
           type: "line",
-          data: [
-            { x: low, y: low },
-            { x: high, y: high },
-          ],
+          data:
+            lineLow < lineHigh
+              ? [
+                  { x: lineLow, y: lineLow },
+                  { x: lineHigh, y: lineHigh },
+                ]
+              : [],
         },
       ]
     : [];
@@ -459,17 +465,17 @@ function PredictedActualChart({
     grid: { borderColor: "#F1F1F1", strokeDashArray: 3 },
     xaxis: {
       type: "numeric",
-      tickAmount: ticks,
-      min: low,
-      max: high,
-      decimalsInFloat: decimals,
+      tickAmount: x.ticks,
+      min: x.low,
+      max: x.high,
+      decimalsInFloat: x.decimals,
       title: { text: "Predicted assay score" },
     },
     yaxis: {
-      tickAmount: ticks,
-      min: low,
-      max: high,
-      decimalsInFloat: decimals,
+      tickAmount: y.ticks,
+      min: y.low,
+      max: y.high,
+      decimalsInFloat: y.decimals,
       title: { text: "Actual assay score" },
     },
     legend: { position: "bottom", horizontalAlign: "left" },
