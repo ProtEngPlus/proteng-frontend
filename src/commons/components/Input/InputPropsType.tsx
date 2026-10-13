@@ -11,6 +11,7 @@ type InputProps = {
   className?: string;
   disabled?: boolean;
   additionalValidation?: Record<string, ValidationProps>;
+  hint?: string;
 };
 
 export type { InputProps };

@@ -97,9 +97,10 @@ export interface MethodParameter {
     | "multiNumberDropdown"
     | "boolean"
     | RunType
-    | "rangePercent";
+    | "rangePercent"
+    | "regionList";
   description: string;
-  default?: string | number | number[] | boolean | RunType;
+  default?: string | number | number[] | number[][] | boolean | RunType;
   low?: number;
   high?: number;
   dropdownItems?: string[] | number[];
@@ -113,11 +114,15 @@ export interface ValidationRule {
   minLength?: { value: number; message: string };
   maxLength?: { value: number; message: string };
   pattern?: { value: RegExp; message: string };
-  isInteger?: { value: boolean; message: string };
   validate?(
     value: string | number | number[] | boolean | RunType,
   ): boolean | string;
 }
+
+const wholeNumber =
+  (label: string): NonNullable<ValidationRule["validate"]> =>
+  (value) =>
+    Number.isInteger(Number(value)) || `${label} must be a whole number.`;
 
 export const createJobConfig: CreateJobConfig = {
   "Protein Input": {
@@ -177,7 +182,7 @@ export const createJobConfig: CreateJobConfig = {
       "Protein Query Tool to gather similar proteins from a global database",
     tool: {
       Blast: {
-        formatInput: 1,
+        formatInput: 2,
         description:
           "Tool used to compare a query protein sequence against a database of sequences by aligning sequences based on local matches.",
         parameters: [
@@ -203,25 +208,28 @@ export const createJobConfig: CreateJobConfig = {
           {
             name: "Hit Size",
             id: "hitlist_size",
-            type: "percent",
+            type: "number",
             description:
               "The maximum number of protein sequences returned from the database that match the query sequence",
             default: 50,
             additionalValidation: {
               required: { value: true, message: "Hit Size is required." },
-              min: { value: 0, message: "Hit Size must be at least 0." },
+              min: { value: 1, message: "Hit Size must be at least 1." },
+              validate: wholeNumber("Hit Size"),
             },
           },
           {
             name: "E Value",
             id: "expect",
-            type: "percent",
+            type: "dropdown",
             description:
               "The number of expected hits of similar quality (score) that could be found by chance. The smaller the E-value, the better the match.",
+            dropdownItems: [
+              1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001, 0.00001,
+            ],
             default: 10,
             additionalValidation: {
               required: { value: true, message: "Expect is required." },
-              min: { value: 0, message: "Expect must be at least 0." },
             },
           },
           {
@@ -237,9 +245,10 @@ export const createJobConfig: CreateJobConfig = {
                 message: "Sequence Length is required.",
               },
               min: {
-                value: 0,
-                message: "Sequence Length must be at least 0.",
+                value: 1,
+                message: "Sequence Length must be at least 1.",
               },
+              validate: wholeNumber("Sequence Length"),
             },
           },
           {
@@ -270,6 +279,7 @@ export const createJobConfig: CreateJobConfig = {
             additionalValidation: {
               required: { value: true, message: "Random State is required." },
               min: { value: 0, message: "Random State must be at least 0." },
+              validate: wholeNumber("Random State"),
             },
           },
           {
@@ -282,10 +292,16 @@ export const createJobConfig: CreateJobConfig = {
             additionalValidation: {
               required: { value: true, message: "HSP Coverage is required." },
               min: { value: 0, message: "HSP Coverage must be at least 0." },
+              max: {
+                value: 100,
+                message: "HSP Coverage must be at most 100.",
+              },
+              validate: wholeNumber("HSP Coverage"),
             },
           },
         ],
       },
+
       MMseqs2: {
         formatInput: 2,
         description:
@@ -304,21 +320,24 @@ export const createJobConfig: CreateJobConfig = {
                 message: "Maximum Sequences is required.",
               },
               min: {
-                value: 0,
-                message: "Maximum Sequences must be at least 0.",
+                value: 1,
+                message: "Maximum Sequences must be at least 1.",
               },
+              validate: wholeNumber("Maximum Sequences"),
             },
           },
           {
             name: "E Value",
             id: "e",
-            type: "percent",
+            type: "dropdown",
             description:
               "The number of expected hits of similar quality (score) that could be found by chance. The smaller the E-value, the better the match",
-            default: 70,
+            dropdownItems: [
+              1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001, 0.00001,
+            ],
+            default: 0.001,
             additionalValidation: {
               required: { value: true, message: "Expect is required." },
-              min: { value: 0, message: "Expect must be at least 0." },
             },
           },
           {
@@ -347,8 +366,15 @@ export const createJobConfig: CreateJobConfig = {
               "The shortest length of the aligned region between two sequences for the match to be considered valid",
             default: 0,
             additionalValidation: {
-              required: { value: true, message: "Expect is required." },
-              min: { value: 0, message: "Expect must be at least 0." },
+              required: {
+                value: true,
+                message: "Minimum Alignment Length is required.",
+              },
+              min: {
+                value: 0,
+                message: "Minimum Alignment Length must be at least 0.",
+              },
+              validate: wholeNumber("Minimum Alignment Length"),
             },
           },
           {
@@ -397,9 +423,10 @@ export const createJobConfig: CreateJobConfig = {
                 message: "Sequence Length is required.",
               },
               min: {
-                value: 0,
-                message: "Sequence Length must be at least 0.",
+                value: 1,
+                message: "Sequence Length must be at least 1.",
               },
+              validate: wholeNumber("Sequence Length"),
             },
           },
           {
@@ -412,6 +439,7 @@ export const createJobConfig: CreateJobConfig = {
             additionalValidation: {
               required: { value: true, message: "Random State is required." },
               min: { value: 0, message: "Random State must be at least 0." },
+              validate: wholeNumber("Random State"),
             },
           },
         ],
@@ -436,7 +464,8 @@ export const createJobConfig: CreateJobConfig = {
             default: 2,
             additionalValidation: {
               required: { value: true, message: "N Trial is required." },
-              min: { value: 0, message: "N Trial must be at least 0." },
+              min: { value: 1, message: "N Trial must be at least 1." },
+              validate: wholeNumber("N Trial"),
             },
           },
           {
@@ -448,7 +477,8 @@ export const createJobConfig: CreateJobConfig = {
             default: 2,
             additionalValidation: {
               required: { value: true, message: "N Splits is required." },
-              min: { value: 0, message: "N Splits must be at least 0." },
+              min: { value: 2, message: "N Splits must be at least 2." },
+              validate: wholeNumber("N Splits"),
             },
           },
           {
@@ -461,7 +491,8 @@ export const createJobConfig: CreateJobConfig = {
             high: 2,
             additionalValidation: {
               required: { value: true, message: "N Epoch is required." },
-              min: { value: 0, message: "N Epoch must be at least 0." },
+              min: { value: 1, message: "N Epoch must be at least 1." },
+              validate: wholeNumber("N Epoch"),
             },
           },
           {
@@ -496,10 +527,11 @@ export const createJobConfig: CreateJobConfig = {
             type: "number",
             description:
               "Regularization technique that penalizes large weights to improve generalization and prevent overfitting, promoting more consistent model behavior across training.",
-            default: 2,
+            default: 0.01,
             additionalValidation: {
               required: { value: true, message: "Weight Decay is required." },
               min: { value: 0, message: "Weight Decay must be at least 0." },
+              max: { value: 1, message: "Weight Decay must be at most 1." },
             },
           },
           {
@@ -514,7 +546,8 @@ export const createJobConfig: CreateJobConfig = {
                 value: true,
                 message: "N Epochs Config is required.",
               },
-              min: { value: 0, message: "N Epochs Config must be at least 0." },
+              min: { value: 1, message: "N Epochs Config must be at least 1." },
+              validate: wholeNumber("N Epochs Config"),
             },
           },
         ],
@@ -555,19 +588,20 @@ export const createJobConfig: CreateJobConfig = {
             default: 56,
             additionalValidation: {
               required: { value: true, message: "N Batch is required." },
-              min: { value: 0, message: "N Batch must be at least 0." },
+              min: { value: 1, message: "N Batch must be at least 1." },
+              validate: wholeNumber("N Batch"),
             },
           },
           {
             name: "Alpha",
             id: "alpha",
-            type: "number",
+            type: "dropdown",
             description:
               "A measure of how much the model is overfitting, Regularization Strength As alpha increases, strength increases, leading to more variance from the regular model",
+            dropdownItems: [100, 10, 1, 0.1, 0.01, 0.001],
             default: 0.1,
             additionalValidation: {
               required: { value: true, message: "Alpha is required." },
-              min: { value: 0, message: "Alpha must be at least 0." },
             },
           },
         ],
@@ -595,13 +629,10 @@ export const createJobConfig: CreateJobConfig = {
                 message: "Number of trajectories is required.",
               },
               min: {
-                value: 0,
-                message: "Number of trajectories must be at least 0.",
+                value: 1,
+                message: "Number of trajectories must be at least 1.",
               },
-              isInteger: {
-                value: true,
-                message: "Number of trajectories must be an integer.",
-              },
+              validate: wholeNumber("Number of trajectories"),
             },
           },
           {
@@ -617,39 +648,59 @@ export const createJobConfig: CreateJobConfig = {
                 message: "Number of iterations is required.",
               },
               min: {
-                value: 0,
-                message: "Number of iterations must be at least 0.",
+                value: 1,
+                message: "Number of iterations must be at least 1.",
               },
+              validate: wholeNumber("Number of iterations"),
             },
           },
           {
-            name: "Mutated Position Range",
-            id: "mutate_pos_range",
-            type: "number",
+            name: "Mutation Regions",
+            id: "mutate_regions",
+            type: "regionList",
             description:
-              "The range of positions from the current mutated position where the next mutation is located",
-            default: 5,
+              "The regions of the protein that are allowed to mutate, each from a start to an end position. Positions are counted from 1 and both ends are included. Leave it empty to allow the whole sequence.\nWith 2 or more regions, every region gets one trajectory that stays inside it and one more trajectory combines regions, so Number of Trajectories must be at least the number of regions plus 1.",
+            default: [],
+          },
+          {
+            name: "Number of Mutations",
+            id: "num_mutations",
+            type: "rangeNumber",
+            description:
+              "The fewest and the most positions in which a mutated protein may differ from the wild-type (the original protein). The limit covers all regions together, not each region.",
+            low: 1,
+            high: 3,
             additionalValidation: {
               required: {
                 value: true,
-                message: "Number of iterations is required.",
+                message: "Number of mutations is required.",
               },
               min: {
-                value: 0,
-                message: "Number of iterations must be at least 0.",
+                value: 1,
+                message: "Number of mutations must be at least 1.",
               },
+              validate: wholeNumber("Number of mutations"),
             },
+          },
+          {
+            name: "Amino Acids",
+            id: "amino_acid_set",
+            type: "dropdown",
+            description:
+              "The amino acids a position can mutate to. 20 standard are the amino acids proteins are normally made of. U (selenocysteine) is rare in nature and needs special methods to be made in a lab.",
+            dropdownItems: ["20 standard", "20 standard + U"],
+            default: "20 standard",
           },
           {
             name: "Temperature",
             id: "temperature",
-            type: "number",
+            type: "dropdown",
             description:
               "Determining whether the output is more random and creative (high temperature) or more predictable (low temperature)",
+            dropdownItems: [10, 1, 0.1, 0.01, 0.001, 0.0001],
             default: 0.01,
             additionalValidation: {
               required: { value: true, message: "Temperature is required." },
-              min: { value: 0, message: "Temperature must be at least 0." },
             },
           },
         ],

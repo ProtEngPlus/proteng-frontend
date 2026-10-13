@@ -41,11 +41,7 @@ export default function ProteinQuery({
   queryResult,
   setQueryResult,
 }: Props) {
-  const {
-    getValues,
-    watch,
-    formState: { errors },
-  } = useFormContext();
+  const { getValues, watch } = useFormContext();
 
   const currentSubMethod =
     watch(`tool_${stepsForCreateJob[step - 1]}`) ??
@@ -96,19 +92,20 @@ export default function ProteinQuery({
       >
         <div className="grid grid-cols-[10.625rem_31.25rem] gap-5">
           <div className="flex flex-row gap-x-3 items-center">
-            {errors.name && <span className="text-red-500">*</span>}
             <Icon
               icon="ph:pencil-simple-line"
               className="text-gray-400 size-6"
             />
-            <label>Job Name:</label>
+            <label>
+              Job Name<span className="text-red-500">*</span> :
+            </label>
           </div>
 
           <TextInput
             id="name"
-            placeholder="Job Name*"
+            placeholder="Job Name"
             additionalValidation={{
-              required: { value: true },
+              required: { value: true, message: "Job Name is required." },
             }}
             onEdit={isEditInfo}
           />

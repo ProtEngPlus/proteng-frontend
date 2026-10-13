@@ -13,6 +13,10 @@ import {
   SuccessOverlayProps,
 } from "../../commons/components/ModalOverlay/SuccessOverlay";
 import { changePassword } from "../../commons/api/auth";
+import {
+  passwordPolicyHint,
+  passwordPolicyValidation,
+} from "../../commons/configs/passwordConfig";
 
 type FormValues = {
   current_password: string;
@@ -26,6 +30,7 @@ export default function ChangePasswordPage() {
   const navigate = useNavigate();
 
   const [isConfirmVisible, setConfirmVisible] = useState(false);
+  const [isSaving, setSaving] = useState(false);
   const ConfirmProps: ConfirmOverlayProps = {
     id: "confirm-change-password",
     onClose: () => {
@@ -35,6 +40,7 @@ export default function ChangePasswordPage() {
       setConfirmVisible(false);
       const current_password = watch("current_password");
       const new_password = watch("new_password");
+      setSaving(true);
       try {
         await changePassword(current_password, new_password);
         setSuccessVisible(true);
@@ -44,6 +50,8 @@ export default function ChangePasswordPage() {
           type: "manual",
           message: "Incorrect Password",
         });
+      } finally {
+        setSaving(false);
       }
     },
     title: "Do you want to change the password?",
@@ -95,7 +103,7 @@ export default function ChangePasswordPage() {
           label="Current Password"
           placeholder="Current Password*"
           additionalValidation={{
-            required: { value: true },
+            required: { value: true, message: "Current Password is required." },
           }}
         />
 
@@ -103,8 +111,10 @@ export default function ChangePasswordPage() {
           id="new_password"
           label="New Password"
           placeholder="New Password*"
+          hint={passwordPolicyHint}
           additionalValidation={{
-            required: { value: true },
+            required: { value: true, message: "New Password is required." },
+            ...passwordPolicyValidation,
           }}
         />
 
@@ -113,7 +123,10 @@ export default function ChangePasswordPage() {
           label="Confirm New Password"
           placeholder="Confirm New Password*"
           additionalValidation={{
-            required: { value: true },
+            required: {
+              value: true,
+              message: "Confirm New Password is required.",
+            },
           }}
         />
 
@@ -124,13 +137,15 @@ export default function ChangePasswordPage() {
             type="button"
             text="Cancel"
             onClick={() => navigate("/account-management")}
+            disabled={isSaving}
           />
 
           <Button
             id="change-password"
             buttonType="submit"
-            text="Save"
+            text={isSaving ? "Please wait..." : "Save"}
             type="submit"
+            disabled={isSaving}
           />
         </div>
       </form>

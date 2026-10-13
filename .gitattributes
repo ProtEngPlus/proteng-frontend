@@ -1,0 +1,11 @@
+# Prettier formats with LF (endOfLine default), and the pre-push hook runs
+# `npm run format:check`, so keep every text file LF on Windows checkouts too.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

@@ -10,6 +10,7 @@ export default function PasswordInput({
   className,
   disabled,
   additionalValidation,
+  hint,
 }: InputProps) {
   const {
     register,
@@ -55,10 +56,12 @@ export default function PasswordInput({
         </button>
       </div>
 
-      {errors[id]?.message && (
+      {errors[id]?.message ? (
         <span className="font-light text-error text-xs">
           {errors[id]?.message as string}
         </span>
+      ) : (
+        hint && <span className="font-light text-label text-xs">{hint}</span>
       )}
     </div>
   );

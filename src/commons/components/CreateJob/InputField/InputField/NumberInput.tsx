@@ -33,28 +33,30 @@ export default function NumberInput({
   } = useFormContext();
 
   useEffect(() => {
-    setValue(id, currentValue);
+    setValue(id, currentValue, { shouldValidate: true });
   }, []);
 
   const currentValue = Number(watch(id)) || defaultValue || 0;
 
   const handleIncrease = (e: React.MouseEvent) => {
     e.preventDefault();
-    setValue(id, Number(currentValue) + 1);
+    setValue(id, Number(currentValue) + 1, { shouldValidate: true });
   };
 
   const handleDecrease = (e: React.MouseEvent) => {
     e.preventDefault();
-    setValue(id, Math.max(0, Number(currentValue) - 1));
+    setValue(id, Math.max(0, Number(currentValue) - 1), {
+      shouldValidate: true,
+    });
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const raw = e.target.value.trim();
 
     if (raw === "" || isNaN(Number(raw))) {
-      setValue(id, defaultValue || 0);
+      setValue(id, defaultValue || 0, { shouldValidate: true });
     } else {
-      setValue(id, Number(parseFloat(raw)));
+      setValue(id, Number(parseFloat(raw)), { shouldValidate: true });
     }
   };
 
@@ -70,81 +72,90 @@ export default function NumberInput({
                   ? "grid grid-cols-[1fr,4fr] max-w-[1000px]"
                   : "grid grid-cols-[1fr,2fr] max-w-[1000px]"
           }
-         min-w-fit space-x-3 items-center`}
+         min-w-fit space-x-3 items-start`}
     >
-      <label className="font-light ">{label}:</label>
-      <div className="relative w-fit min-w-fit">
+      <label className="font-light ">
+        {label}
+        {typeof additionalValidation?.required === "object" &&
+          additionalValidation.required.value && (
+            <span className="text-red-500">*</span>
+          )}
+        :
+      </label>
+      <div className="w-fit min-w-fit">
         {!onEdit ? (
           <div className="w-24 text-start">{currentValue}</div>
         ) : (
           <div>
-            <input
-              id={id}
-              type="text"
-              inputMode="numeric"
-              pattern="\d*"
-              defaultValue={defaultValue}
-              {...register(id, {
-                ...(additionalValidation || {}),
-                onBlur: handleBlur,
-              })}
-              onKeyDown={(e) => {
-                const allowedKeys = [
-                  "Backspace",
-                  "Tab",
-                  "ArrowLeft",
-                  "ArrowRight",
-                  "Delete",
-                  "Home",
-                  "End",
-                ];
+            <div className="relative w-fit min-w-fit mb-5">
+              <input
+                id={id}
+                type="text"
+                inputMode="numeric"
+                pattern="\d*"
+                defaultValue={defaultValue}
+                {...register(id, {
+                  ...(additionalValidation || {}),
+                  onBlur: handleBlur,
+                })}
+                onKeyDown={(e) => {
+                  const allowedKeys = [
+                    "Backspace",
+                    "Tab",
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "Delete",
+                    "Home",
+                    "End",
+                  ];
 
-                // Allow digits, control keys
-                if (/[0-9]/.test(e.key) || allowedKeys.includes(e.key)) {
-                  return;
-                }
+                  // Allow digits, control keys
+                  if (/[0-9]/.test(e.key) || allowedKeys.includes(e.key)) {
+                    return;
+                  }
 
-                // Allow only one dot
-                const value = e.currentTarget.value;
-                if (e.key === "." && !value.includes(".")) {
-                  return;
-                }
+                  // Allow only one dot
+                  const value = e.currentTarget.value;
+                  if (e.key === "." && !value.includes(".")) {
+                    return;
+                  }
 
-                // Block all other keys
-                e.preventDefault();
-              }}
-              className={clsx(
-                "h-[40px] w-24 p-2 bg-white border text-sm border-pep-gray-border font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
-                {
-                  "border-error": !!errors[id],
-                  "border-gray-border": !errors[id],
-                },
-                className,
+                  // Block all other keys
+                  e.preventDefault();
+                }}
+                className={clsx(
+                  "h-[40px] w-24 p-2 bg-white border text-sm border-pep-gray-border font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
+                  {
+                    "border-error": !!errors[id],
+                    "border-gray-border": !errors[id],
+                  },
+                  className,
+                )}
+                disabled={disabled}
+                autoComplete="off"
+                aria-label={`Percentage input for ${id}`}
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex flex-col gap-1">
+                {/* Increase button */}
+                <Icon
+                  icon="mingcute:up-line"
+                  className="text-pep-dark-gray size-[15px] hover:text-pep-gray cursor-pointer"
+                  onClick={handleIncrease}
+                />
+                {/* Decrease button */}
+                <Icon
+                  icon="mingcute:down-line"
+                  className="text-pep-dark-gray size-[15px] hover:text-pep-gray cursor-pointer"
+                  onClick={handleDecrease}
+                />
+              </div>
+
+              {errors[id]?.message && (
+                <span className="absolute left-0 top-full mt-1 whitespace-nowrap font-light text-error text-xs">
+                  {errors[id]?.message as string}
+                </span>
               )}
-              disabled={disabled}
-              autoComplete="off"
-              aria-label={`Percentage input for ${id}`}
-            />
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex flex-col gap-1">
-              {/* Increase button */}
-              <Icon
-                icon="mingcute:up-line"
-                className="text-pep-dark-gray size-[15px] hover:text-pep-gray cursor-pointer"
-                onClick={handleIncrease}
-              />
-              {/* Decrease button */}
-              <Icon
-                icon="mingcute:down-line"
-                className="text-pep-dark-gray size-[15px] hover:text-pep-gray cursor-pointer"
-                onClick={handleDecrease}
-              />
             </div>
-
-            {errors[id]?.message && (
-              <span className="font-light text-error text-xs">
-                {errors[id]?.message as string}
-              </span>
-            )}
           </div>
         )}
       </div>

@@ -1,4 +1,4 @@
-import { get, post, put, del } from "./common";
+import { get, put, del } from "./common";
 import { BACKEND_BASE_URL } from "../configs/apiConfig";
 import { User, UserRegister } from "../interfaces/User.interface";
 
@@ -45,14 +45,3 @@ export const deleteUser = async (id: string) => {
   const path = USER_PATH + `/${id}`;
   return await del(path);
 };
-
-/*------------------------*/
-
-/* USER API for Public */
-
-export const createUser = async (user: UserRegister) => {
-  const path = USER_PATH;
-  return await post<UserRegister>(path, user, true);
-};
-
-/*------------------------*/

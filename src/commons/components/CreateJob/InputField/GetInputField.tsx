@@ -6,6 +6,8 @@ import MultiNumberDropdown from "./InputField/MultiNumberDropdown";
 import { MethodParameter } from "../../../../commons/configs/createJobConfig";
 import { ValidationProps } from "../../../../commons/components/Input/InputPropsType";
 import RangePercentInput from "./InputField/RangePercentInput";
+import RegionListInput from "./InputField/RegionListInput";
+import { Region } from "../../../utils/mutationRegions";
 
 interface GetInputFieldProps {
   id: MethodParameter["id"];
@@ -17,6 +19,7 @@ interface GetInputFieldProps {
   disable?: boolean;
   onEdit?: boolean;
   formatInput?: number;
+  proteinLength?: number;
 }
 
 export default function GetInputField({
@@ -29,6 +32,7 @@ export default function GetInputField({
   disable = false,
   onEdit = true,
   formatInput = 2,
+  proteinLength,
 }: GetInputFieldProps) {
   // Filter out undefined validation rules
   const filteredValidation: Record<string, ValidationProps> | undefined =
@@ -102,9 +106,23 @@ export default function GetInputField({
           additionalValidation={filteredValidation}
           disabled={disable}
           onEdit={onEdit}
+          formatInput={formatInput}
         />
       );
     }
+
+    case "regionList":
+      return (
+        <RegionListInput
+          id={id}
+          label={label}
+          defaultValue={Array.isArray(value) ? (value as Region[]) : undefined}
+          disabled={disable}
+          onEdit={onEdit}
+          formatInput={formatInput}
+          proteinLength={proteinLength}
+        />
+      );
 
     case "rangePercent": {
       const low =

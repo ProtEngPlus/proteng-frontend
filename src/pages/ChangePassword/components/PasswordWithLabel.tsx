@@ -11,17 +11,20 @@ export default function PasswordField({
   placeholder,
   additionalValidation,
   className,
+  hint,
 }: PasswordFieldProps) {
   return (
     <div className="grid grid-cols-[200px_400px] gap-5 items-center">
       <label className="font-light" htmlFor={id}>
         {label}
       </label>
+
       <PasswordInput
         id={id}
         placeholder={placeholder}
         additionalValidation={additionalValidation}
         className={className}
+        hint={hint}
       />
     </div>
   );

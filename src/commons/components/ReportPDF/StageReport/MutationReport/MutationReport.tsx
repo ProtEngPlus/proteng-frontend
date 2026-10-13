@@ -2,6 +2,7 @@ import { Text, View } from "@react-pdf/renderer";
 import { ReportStyles as styles } from "../../ReportStyle";
 import InfoBox, { renderOptionText } from "../../ReportInfoBox";
 import { OptionValue } from "../../../../interfaces/Job.interface";
+import { formatRange, formatRegions } from "../../../../utils/mutationRegions";
 
 export default function MutationReport({
   tool,
@@ -22,10 +23,33 @@ export default function MutationReport({
         label={"Number Of Iteration"}
         text={renderOptionText(option.num_iterations)}
       />
-      <InfoBox
-        label={"Mutation Position Range"}
-        text={renderOptionText(option.mutate_pos_range)}
-      />
+      {"mutate_regions" in option && (
+        <InfoBox
+          label={"Mutation Regions"}
+          text={formatRegions(option.mutate_regions)}
+        />
+      )}
+      {"num_mutations_low" in option && (
+        <InfoBox
+          label={"Number Of Mutations"}
+          text={formatRange(
+            option.num_mutations_low,
+            option.num_mutations_high,
+          )}
+        />
+      )}
+      {"amino_acid_set" in option && (
+        <InfoBox
+          label={"Amino Acids"}
+          text={renderOptionText(option.amino_acid_set)}
+        />
+      )}
+      {"mutate_pos_range" in option && (
+        <InfoBox
+          label={"Mutation Position Range"}
+          text={renderOptionText(option.mutate_pos_range)}
+        />
+      )}
       <InfoBox
         label={"Temperature"}
         text={renderOptionText(option.temperature)}

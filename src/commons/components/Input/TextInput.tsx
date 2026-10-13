@@ -7,6 +7,7 @@ export type TextProps = {
   placeholder: string;
   className?: string;
   disabled?: boolean;
+  autoLowercase?: boolean;
   additionalValidation?: Record<string, ValidationProps>;
   onEdit?: boolean;
 };
@@ -17,6 +18,7 @@ export default function TextInput({
   className,
   disabled,
   additionalValidation,
+  autoLowercase = false,
   onEdit = true,
 }: TextProps) {
   const {
@@ -26,6 +28,20 @@ export default function TextInput({
   } = useFormContext();
 
   const currentValue = watch(id);
+  const registration = register(id, { ...additionalValidation });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (autoLowercase) {
+      const el = e.target;
+      const lowered = el.value.toLowerCase();
+      if (lowered !== el.value) {
+        const pos = el.selectionStart;
+        el.value = lowered;
+        el.setSelectionRange(pos, pos);
+      }
+    }
+    return registration.onChange(e);
+  };
 
   return (
     <div>
@@ -45,7 +61,8 @@ export default function TextInput({
               className,
             )}
             disabled={disabled}
-            {...register(id, { ...additionalValidation })}
+            {...registration}
+            onChange={handleChange}
             autoComplete="off"
           />
           {errors[id]?.message && (

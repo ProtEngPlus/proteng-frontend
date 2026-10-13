@@ -49,16 +49,12 @@ export default function Textarea({
             {...register(id, { ...additionalValidation })}
             autoComplete="off"
           />
-          <div
-            className={`w-full flex text-right ml-auto text-sm font-light ${
-              errors[id]?.message ? "justify-between" : "justify-end"
-            }`}
-          >
-            {errors[id]?.message && (
-              <span className="font-light text-error text-xs">
-                {errors[id]?.message as string}
-              </span>
-            )}
+          {errors[id]?.message && (
+            <span className="block mt-1 font-light text-error text-xs">
+              {errors[id]?.message as string}
+            </span>
+          )}
+          <div className="w-full flex justify-end text-right ml-auto text-sm font-light">
             {maxLength && (
               <span className={`text-${errors[id] ? "error" : "black"}`}>
                 {textareaValue.length}/{maxLength}

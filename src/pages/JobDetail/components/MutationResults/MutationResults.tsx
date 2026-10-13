@@ -177,6 +177,7 @@ export default function MutationResults({
         newMutationProps={NewMutationProps}
         currentStep={currentStep}
         pipeline={pipeline}
+        inputProtein={inputProtein}
       />
       <DeleteOverlay isVisible={isDeleteVisible} deleteProps={DeleteProps} />
       <div className="rounded-lg border border-pep-gray-border px-6 py-8 font-light">

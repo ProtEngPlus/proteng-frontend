@@ -29,6 +29,7 @@ import {
 } from "../../commons/components/ModalOverlay/DeleteOverlay";
 import MutationResults from "./components/MutationResults/MutationResults";
 import { defaultPipeline } from "../../commons/configs/createJobConfig";
+import WetLabResults from "./components/WetLabResults/WetLabResults";
 
 export default function JobDetailPage() {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ export default function JobDetailPage() {
   const [job, setJob] = useState<JobInterface>();
   const [isEditDescription, setEditDescription] = useState(false);
   const [isEditPipeline, setIsEditPipeline] = useState(false);
+  const [wetLabVisit, setWetLabVisit] = useState(0);
 
   const form = useForm();
   const { watch } = form;
@@ -96,6 +98,11 @@ export default function JobDetailPage() {
           id: "mutaion-results-tab",
           triggerEl: document.querySelector("#mutaion-results-tab"),
           targetEl: document.querySelector("#mutaion-results-content"),
+        },
+        {
+          id: "wet-lab-results-tab",
+          triggerEl: document.querySelector("#wet-lab-results-tab"),
+          targetEl: document.querySelector("#wet-lab-results-content"),
         },
       ].filter(
         (item) => item.triggerEl !== null && item.targetEl !== null,
@@ -313,6 +320,20 @@ export default function JobDetailPage() {
                   Mutation Results
                 </button>
               </li>
+              <li className="me-2">
+                <button
+                  disabled={job.stage_id < 3 || isEditPipeline}
+                  className="inline-block p-4 border-b-2 rounded-t-lg disabled:cursor-not-allowed disabled:text-gray-300"
+                  id="wet-lab-results-tab"
+                  type="button"
+                  role="tab"
+                  aria-controls="wet-lab-results-content"
+                  aria-selected="false"
+                  onClick={() => setWetLabVisit((visit) => visit + 1)}
+                >
+                  Wet-lab Results
+                </button>
+              </li>
             </ul>
           </div>
           <div id="default-styled-tab-content">
@@ -345,6 +366,13 @@ export default function JobDetailPage() {
                 currentStep={job.stage_id}
                 pipeline={defaultPipeline}
               />
+            </div>
+            <div
+              id="wet-lab-results-content"
+              role="tabpanel"
+              aria-labelledby="wet-lab-results-tab"
+            >
+              <WetLabResults key={wetLabVisit} jobid={job.id} />
             </div>
           </div>
         </div>

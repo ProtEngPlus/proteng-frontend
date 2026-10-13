@@ -18,11 +18,13 @@ export function NewMutationOverlay({
   newMutationProps,
   currentStep,
   pipeline,
+  inputProtein,
 }: {
   isVisible: boolean;
   newMutationProps: NewMutationProps;
   currentStep: number;
   pipeline: PipelineItem[];
+  inputProtein: string;
 }) {
   const { onClose, onConfirm } = newMutationProps;
   const [name, setName] = useState("");
@@ -37,13 +39,24 @@ export function NewMutationOverlay({
       parameters: config?.parameters || {},
     };
   }, [currentStep, pipeline]);
-  const { getValues } = useFormContext();
+  const { getValues, trigger } = useFormContext();
 
   const [isError, setIsError] = useState(false);
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (name.length === 0) {
       setIsError(true);
-    } else {
+      return;
+    }
+
+    // check the parameters before anything is created
+    const fieldNames = Array.isArray(jobConfig.parameters)
+      ? jobConfig.parameters.flatMap((param) =>
+          param.type === "rangeNumber"
+            ? [`${param.id}_low`, `${param.id}_high`]
+            : [param.id],
+        )
+      : [];
+    if (await trigger(fieldNames)) {
       onConfirm(name);
     }
   };
@@ -130,6 +143,7 @@ export function NewMutationOverlay({
                   )}
                   isEdit={true}
                   disable={false}
+                  proteinLength={inputProtein.length}
                 />
               </div>
             </div>
