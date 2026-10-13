@@ -31,7 +31,6 @@ export const login = async (email: string, password: string, role: string) => {
 };
 
 export const logout = async () => {
-  sessionStorage.removeItem("user");
   await apiClient.post(BACKEND_BASE_URL + "/proteng-user-mgmt/auth/logout");
 };
 

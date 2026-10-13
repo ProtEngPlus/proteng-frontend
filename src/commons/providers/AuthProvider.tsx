@@ -33,11 +33,7 @@ export const AuthContext = createContext<AuthContextType>(
 );
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(
-    sessionStorage.getItem("user")
-      ? JSON.parse(sessionStorage.getItem("user") as string)
-      : null,
-  );
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,12 +52,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         if (response.code !== 200 || !response.data) {
           setUser(null);
-          sessionStorage.removeItem("user");
           navigate("/sign-in");
           return;
         }
         setUser(response.data);
-        sessionStorage.setItem("user", JSON.stringify(response.data));
       })
       .catch((error) => {
         setLoading(false);
@@ -74,7 +68,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const onSessionExpired = () => {
       setUser(null);
-      sessionStorage.removeItem("user");
       if (!PUBLIC_ROUTES.includes(location.pathname)) {
         navigate("/sign-in");
       }
@@ -92,7 +85,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return null;
     }
     setUser(response.data);
-    sessionStorage.setItem("user", JSON.stringify(response.data));
     setLoading(false);
     return response.data;
   };
@@ -114,7 +106,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     setUser({ ...user, ...res.data });
-    sessionStorage.setItem("user", JSON.stringify({ ...user, ...res.data }));
   };
 
   return (
