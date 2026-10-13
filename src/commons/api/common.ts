@@ -4,6 +4,7 @@ import {
   ApiResponse,
   Params,
 } from "../interfaces/ApiResponse.interface";
+import { apiClient } from "./client";
 import { getHeaderWithToken, isResponseOk } from "./utils";
 
 export const get = async <T>(
@@ -13,7 +14,7 @@ export const get = async <T>(
 ) => {
   try {
     const headers = withHeader ? getHeaderWithToken() : {};
-    const axios_response = await axios.get(path, {
+    const axios_response = await apiClient.get(path, {
       headers,
       params,
       paramsSerializer: { indexes: null },
@@ -41,7 +42,7 @@ export const getRaw = async (
 ) => {
   try {
     const headers = withHeader ? getHeaderWithToken() : {};
-    const axios_response = await axios.get(path, {
+    const axios_response = await apiClient.get(path, {
       headers,
       params,
       paramsSerializer: { indexes: null },
@@ -63,7 +64,7 @@ export const post = async <T>(
   withHeader: boolean = false,
 ) => {
   const headers = withHeader ? getHeaderWithToken() : {};
-  const axios_response = await axios.post(path, data, { headers });
+  const axios_response = await apiClient.post(path, data, { headers });
   const res = axios_response.data as ApiResponse<T>;
   if (!isResponseOk(res)) {
     throwError(res.code, res.error);
@@ -77,7 +78,7 @@ export const put = async <T>(
   withHeader: boolean = false,
 ) => {
   const headers = withHeader ? getHeaderWithToken() : {};
-  const axios_response = await axios.put(path, data, { headers });
+  const axios_response = await apiClient.put(path, data, { headers });
   const res = axios_response.data as ApiResponse<T>;
   if (!isResponseOk(res)) {
     throwError(res.code, res.error);
@@ -91,7 +92,7 @@ export const patch = async <T>(
   withHeader: boolean = false,
 ) => {
   const headers = withHeader ? getHeaderWithToken() : {};
-  const axios_response = await axios.patch(path, data, { headers });
+  const axios_response = await apiClient.patch(path, data, { headers });
   const res = axios_response.data as ApiResponse<T>;
   if (!isResponseOk(res)) {
     throwError(res.code, res.error);
@@ -101,7 +102,7 @@ export const patch = async <T>(
 
 export const del = async (path: string, withHeader: boolean = false) => {
   const headers = withHeader ? getHeaderWithToken() : {};
-  const axios_response = await axios.delete(path, { headers });
+  const axios_response = await apiClient.delete(path, { headers });
   const res = axios_response.data as ApiResponse<null>;
   if (!isResponseOk(res)) {
     throwError(res.code, res.error);

@@ -5,6 +5,7 @@ import {
   ApiResponse,
 } from "../interfaces/ApiResponse.interface";
 import { UserLogin, UserRegister } from "../interfaces/User.interface";
+import { apiClient } from "./client";
 import { get, patch, post } from "./common";
 import { isResponseOk } from "./utils";
 import { addHoursToDate } from "../utils/utils";
@@ -19,7 +20,7 @@ export const register = async (user: UserRegister) => {
 
 export const login = async (email: string, password: string, role: string) => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/login";
-  const axios_response = await axios.post(path, { email, password, role });
+  const axios_response = await apiClient.post(path, { email, password, role });
   const res = axios_response.data as ApiResponse<UserLogin>;
 
   // Check if the response is ok
@@ -62,7 +63,7 @@ export const getMe = async () => {
 
 export const forgotPassword = async (email: string) => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/forgotpassword";
-  const axios_response = await axios.post(path, { email });
+  const axios_response = await apiClient.post(path, { email });
   const res = axios_response.data as ApiResponse<{ email: string }>;
 
   // Check if the response is ok
@@ -76,7 +77,7 @@ export const forgotPassword = async (email: string) => {
 export const resetPassword = async (password: string, token: string) => {
   const path =
     BACKEND_BASE_URL + `/proteng-user-mgmt/auth/resetpassword/${token}`;
-  const axios_response = await axios.patch(path, { password });
+  const axios_response = await apiClient.patch(path, { password });
   const res = axios_response.data as ApiResponse<null>;
 
   // Check if the response is ok
@@ -115,7 +116,7 @@ export const changePassword = async (
 
 export const sendVerification = async (email: string) => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/sendverification";
-  const axios_response = await axios.post(path, {
+  const axios_response = await apiClient.post(path, {
     email,
   });
   const res = axios_response.data as ApiResponse<null>;
@@ -139,7 +140,7 @@ export const getRetryAfterSeconds = (error: unknown): number | null => {
 export const successVerification = async (token: string) => {
   const path =
     BACKEND_BASE_URL + `/proteng-user-mgmt/auth/verifyemail/${token}`;
-  const axios_response = await axios.post(path, {});
+  const axios_response = await apiClient.post(path, {});
   const res = axios_response.data as ApiResponse<UserLogin>;
 
   if (!isResponseOk(res)) {
