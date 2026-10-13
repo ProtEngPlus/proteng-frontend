@@ -4,17 +4,12 @@ import {
   ApiResponse,
   Params,
 } from "../interfaces/ApiResponse.interface";
-import { getHeaderWithToken, isResponseOk } from "./utils";
+import { apiClient } from "./client";
+import { isResponseOk } from "./utils";
 
-export const get = async <T>(
-  path: string,
-  withHeader: boolean = false,
-  params?: Params,
-) => {
+export const get = async <T>(path: string, params?: Params) => {
   try {
-    const headers = withHeader ? getHeaderWithToken() : {};
-    const axios_response = await axios.get(path, {
-      headers,
+    const axios_response = await apiClient.get(path, {
       params,
       paramsSerializer: { indexes: null },
     });
@@ -34,15 +29,9 @@ export const get = async <T>(
   }
 };
 
-export const getRaw = async (
-  path: string,
-  withHeader: boolean = false,
-  params?: Params,
-) => {
+export const getRaw = async (path: string, params?: Params) => {
   try {
-    const headers = withHeader ? getHeaderWithToken() : {};
-    const axios_response = await axios.get(path, {
-      headers,
+    const axios_response = await apiClient.get(path, {
       params,
       paramsSerializer: { indexes: null },
     });
@@ -57,13 +46,8 @@ export const getRaw = async (
   }
 };
 
-export const post = async <T>(
-  path: string,
-  data: T,
-  withHeader: boolean = false,
-) => {
-  const headers = withHeader ? getHeaderWithToken() : {};
-  const axios_response = await axios.post(path, data, { headers });
+export const post = async <T>(path: string, data: T) => {
+  const axios_response = await apiClient.post(path, data);
   const res = axios_response.data as ApiResponse<T>;
   if (!isResponseOk(res)) {
     throwError(res.code, res.error);
@@ -71,13 +55,8 @@ export const post = async <T>(
   return res;
 };
 
-export const put = async <T>(
-  path: string,
-  data: Partial<T>,
-  withHeader: boolean = false,
-) => {
-  const headers = withHeader ? getHeaderWithToken() : {};
-  const axios_response = await axios.put(path, data, { headers });
+export const put = async <T>(path: string, data: Partial<T>) => {
+  const axios_response = await apiClient.put(path, data);
   const res = axios_response.data as ApiResponse<T>;
   if (!isResponseOk(res)) {
     throwError(res.code, res.error);
@@ -85,13 +64,8 @@ export const put = async <T>(
   return res;
 };
 
-export const patch = async <T>(
-  path: string,
-  data: Partial<T>,
-  withHeader: boolean = false,
-) => {
-  const headers = withHeader ? getHeaderWithToken() : {};
-  const axios_response = await axios.patch(path, data, { headers });
+export const patch = async <T>(path: string, data: Partial<T>) => {
+  const axios_response = await apiClient.patch(path, data);
   const res = axios_response.data as ApiResponse<T>;
   if (!isResponseOk(res)) {
     throwError(res.code, res.error);
@@ -99,9 +73,8 @@ export const patch = async <T>(
   return res;
 };
 
-export const del = async (path: string, withHeader: boolean = false) => {
-  const headers = withHeader ? getHeaderWithToken() : {};
-  const axios_response = await axios.delete(path, { headers });
+export const del = async (path: string) => {
+  const axios_response = await apiClient.delete(path);
   const res = axios_response.data as ApiResponse<null>;
   if (!isResponseOk(res)) {
     throwError(res.code, res.error);
