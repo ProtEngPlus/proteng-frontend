@@ -5,7 +5,6 @@ import Breadcrumb from "./Breadcrumb";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { userRoleMapper } from "../../interfaces/User.interface";
-import { logout } from "../../api/auth";
 
 type MenuItem = {
   icon: string;
@@ -22,7 +21,7 @@ export default function RootLayout({
   const location = useLocation();
 
   //get name and user_role
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const name = `${user?.name ?? ""} ${user?.surname?.[0] ?? ""}.`;
   const user_role =
     user && user.user_role ? userRoleMapper[user.user_role] : "";
@@ -89,16 +88,22 @@ export default function RootLayout({
                 onClick={() => navigate("/account-management")}
               />
               <div className="flex flex-col">
-                <p>{name}</p>
-                <p className="text-xs">{user_role}</p>
+                {user ? (
+                  <>
+                    <p>{name}</p>
+                    <p className="text-xs">{user_role}</p>
+                  </>
+                ) : (
+                  <div className="flex flex-col space-y-1.5 animate-pulse">
+                    <div className="h-4 w-24 rounded bg-gray-200" />
+                    <div className="h-3 w-16 rounded bg-gray-200" />
+                  </div>
+                )}
               </div>
               <Icon
                 icon="mingcute:exit-door-fill"
                 className="text-pep-blue size-[45px] hover:cursor-pointer"
-                onClick={() => {
-                  logout();
-                  navigate("/sign-in");
-                }}
+                onClick={logout}
               />
             </div>
           </div>
