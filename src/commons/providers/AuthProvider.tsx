@@ -1,6 +1,7 @@
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getMe, login as loginApi, logout as logoutApi } from "../api/auth";
+import { SESSION_EXPIRED_EVENT } from "../api/client";
 import { User } from "../interfaces/User.interface";
 
 const PUBLIC_ROUTES = [
@@ -70,6 +71,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         navigate("/sign-in");
       });
   }, [location.pathname]);
+
+  useEffect(() => {
+    const onSessionExpired = () => {
+      setUser(null);
+      sessionStorage.removeItem("user");
+      if (!PUBLIC_ROUTES.includes(location.pathname)) {
+        navigate("/sign-in");
+      }
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    return () =>
+      window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+  }, [location.pathname, navigate]);
 
   const login = async (email: string, password: string, role: string) => {
     setLoading(true);

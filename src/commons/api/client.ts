@@ -5,6 +5,8 @@ const REFRESH_URL = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/refresh";
 const NO_REFRESH_PATHS = ["/auth/login", "/auth/refresh", "/auth/logout"];
 const CONFLICT_RETRY_DELAY_MS = 500;
 
+export const SESSION_EXPIRED_EVENT = "session-expired";
+
 type RetriableRequestConfig = InternalAxiosRequestConfig & {
   _retried?: boolean;
 };
@@ -24,6 +26,9 @@ const refreshSession = (): Promise<void> => {
         if (axios.isAxiosError(error) && error.response?.status === 409) {
           await wait(CONFLICT_RETRY_DELAY_MS);
           return;
+        }
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
         }
         throw error;
       })
