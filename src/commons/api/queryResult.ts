@@ -9,15 +9,15 @@ import {
 const QUERY_RESULT_PATH = BACKEND_BASE_URL + "/proteng-conductor/query_results";
 
 export const getAllQueryResults = async (params: QueryResultSearchParams) => {
-  return await get<QueryResult>(QUERY_RESULT_PATH, true, params as Params);
+  return await get<QueryResult>(QUERY_RESULT_PATH, params as Params);
 };
 
 export const updateQueryResult = async (id: string, data: QueryResult) => {
   const path = QUERY_RESULT_PATH + `/${id}`;
-  return await put<QueryResult>(path, data, true);
+  return await put<QueryResult>(path, data);
 };
 
 export const getReportQueryResults = async (id: string) => {
   const path = QUERY_RESULT_PATH + `/${id}` + `/download`;
-  return await getRaw(path, true);
+  return await getRaw(path);
 };

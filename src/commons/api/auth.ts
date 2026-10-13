@@ -37,7 +37,7 @@ export const logout = async () => {
 
 export const getMe = async () => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/me";
-  return await get<UserLogin>(path, true);
+  return await get<UserLogin>(path);
 };
 
 /*------------------------- password section -------------------------------------*/
@@ -75,15 +75,10 @@ export const changePassword = async (
 ) => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/changepassword";
 
-  // Using the custom patch method and passing true to include headers
-  const res = await patch(
-    path,
-    {
-      current_password,
-      new_password,
-    },
-    true,
-  );
+  const res = await patch(path, {
+    current_password,
+    new_password,
+  });
 
   // Check if the response is ok
   if (!isResponseOk(res)) {

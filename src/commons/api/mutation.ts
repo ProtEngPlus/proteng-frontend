@@ -20,16 +20,16 @@ const EXPERIMENTAL_RESULT_PATH =
 
 export const getMutationHistogram = async (jobId: string) => {
   const path = MUTATION_PATH + `/histograms?job_id=${jobId}`;
-  return await get<MutationHistogram[]>(path, true);
+  return await get<MutationHistogram[]>(path);
 };
 
 export const getMutation = async (mutationId: string) => {
   const path = MUTATION_PATH + `/${mutationId}`;
-  return await get<MutationInterface>(path, true);
+  return await get<MutationInterface>(path);
 };
 
 export const getAllMutations = async (params: MutationSearchParams) => {
-  return await get<MutationInterface[]>(MUTATION_PATH, true, params as Params);
+  return await get<MutationInterface[]>(MUTATION_PATH, params as Params);
 };
 
 export const getAllMutationResult = async (
@@ -37,23 +37,22 @@ export const getAllMutationResult = async (
 ) => {
   return await get<MutationResultInterface[]>(
     MUTATION_RESULT_PATH,
-    true,
     params as Params,
   );
 };
 
 export const createMutation = async (mutation: CreateMutationInterface) => {
-  return await post<CreateMutationInterface>(MUTATION_PATH, mutation, true);
+  return await post<CreateMutationInterface>(MUTATION_PATH, mutation);
 };
 
 export const deleteMutation = async (mutationId: string) => {
   const path = MUTATION_PATH + `/${mutationId}`;
-  return await del(path, true);
+  return await del(path);
 };
 
 export const runMutation = async (mutationId: string) => {
   const path = MUTATION_PATH + `/${mutationId}/run`;
-  return await post(path, {}, true);
+  return await post(path, {});
 };
 
 export const updateMutationDetail = async (
@@ -61,7 +60,7 @@ export const updateMutationDetail = async (
   updateData: Partial<MutationInterface>,
 ) => {
   const path = MUTATION_PATH + `/${mutationId}`;
-  return await put<MutationInterface>(path, updateData, true);
+  return await put<MutationInterface>(path, updateData);
 };
 
 export const updateMutationResultDetail = async (
@@ -69,7 +68,7 @@ export const updateMutationResultDetail = async (
   updateData: Partial<MutationResultInterface>,
 ) => {
   const path = MUTATION_RESULT_PATH + `/${mutationResultId}`;
-  return await put<MutationResultInterface>(path, updateData, true);
+  return await put<MutationResultInterface>(path, updateData);
 };
 
 export const downloadMutationResults = async (
@@ -77,15 +76,13 @@ export const downloadMutationResults = async (
   params: MutationResultSearchParams,
 ) => {
   const path = MUTATION_PATH + `/${mutationId}/download`;
-  return await getRaw(path, true, params as Params);
+  return await getRaw(path, params as Params);
 };
 
 export const getAllExperimentalResults = async (jobId: string) => {
-  return await get<ExperimentalResultInterface[]>(
-    EXPERIMENTAL_RESULT_PATH,
-    true,
-    { job_id: jobId } as Params,
-  );
+  return await get<ExperimentalResultInterface[]>(EXPERIMENTAL_RESULT_PATH, {
+    job_id: jobId,
+  } as Params);
 };
 
 export const upsertExperimentalResult = async (
@@ -94,11 +91,11 @@ export const upsertExperimentalResult = async (
 ) => {
   const path =
     EXPERIMENTAL_RESULT_PATH + `/by-mutation-result/${mutationResultId}`;
-  return await put<ExperimentalResultInput>(path, input, true);
+  return await put<ExperimentalResultInput>(path, input);
 };
 
 export const deleteExperimentalResult = async (mutationResultId: string) => {
   const path =
     EXPERIMENTAL_RESULT_PATH + `/by-mutation-result/${mutationResultId}`;
-  return await del(path, true);
+  return await del(path);
 };
