@@ -88,8 +88,17 @@ export default function RootLayout({
                 onClick={() => navigate("/account-management")}
               />
               <div className="flex flex-col">
-                <p>{name}</p>
-                <p className="text-xs">{user_role}</p>
+                {user ? (
+                  <>
+                    <p>{name}</p>
+                    <p className="text-xs">{user_role}</p>
+                  </>
+                ) : (
+                  <div className="flex flex-col space-y-1.5 animate-pulse">
+                    <div className="h-4 w-24 rounded bg-gray-200" />
+                    <div className="h-3 w-16 rounded bg-gray-200" />
+                  </div>
+                )}
               </div>
               <Icon
                 icon="mingcute:exit-door-fill"
