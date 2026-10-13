@@ -4,7 +4,7 @@ import {
   ApiErrorResponse,
   ApiResponse,
 } from "../interfaces/ApiResponse.interface";
-import { UserLogin, UserRegister } from "../interfaces/User.interface";
+import { User, UserRegister } from "../interfaces/User.interface";
 import { apiClient } from "./client";
 import { get, patch, post } from "./common";
 import { isResponseOk } from "./utils";
@@ -20,7 +20,7 @@ export const register = async (user: UserRegister) => {
 export const login = async (email: string, password: string, role: string) => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/login";
   const axios_response = await apiClient.post(path, { email, password, role });
-  const res = axios_response.data as ApiResponse<UserLogin>;
+  const res = axios_response.data as ApiResponse<User>;
 
   // Check if the response is ok
   if (!isResponseOk(res)) {
@@ -37,7 +37,7 @@ export const logout = async () => {
 
 export const getMe = async () => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/me";
-  return await get<UserLogin>(path);
+  return await get<User>(path);
 };
 
 /*------------------------- password section -------------------------------------*/
@@ -117,7 +117,7 @@ export const successVerification = async (token: string) => {
   const path =
     BACKEND_BASE_URL + `/proteng-user-mgmt/auth/verifyemail/${token}`;
   const axios_response = await apiClient.post(path, {});
-  const res = axios_response.data as ApiResponse<UserLogin>;
+  const res = axios_response.data as ApiResponse<User>;
 
   if (!isResponseOk(res)) {
     throw new ApiErrorResponse(res.code, res.error || "Unknown error");

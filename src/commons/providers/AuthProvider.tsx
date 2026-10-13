@@ -60,9 +60,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           navigate("/sign-in");
           return;
         }
-        const { access_token: _access_token, ...userData } = response.data;
-        setUser(userData as User);
-        sessionStorage.setItem("user", JSON.stringify(userData));
+        setUser(response.data);
+        sessionStorage.setItem("user", JSON.stringify(response.data));
       })
       .catch((error) => {
         setLoading(false);
@@ -92,12 +91,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
       return null;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { access_token, ...userData } = response.data;
-    setUser(userData as User);
-    sessionStorage.setItem("user", JSON.stringify(userData));
+    setUser(response.data);
+    sessionStorage.setItem("user", JSON.stringify(response.data));
     setLoading(false);
-    return userData as User;
+    return response.data;
   };
 
   const logout = async () => {
