@@ -8,7 +8,6 @@ import { UserLogin, UserRegister } from "../interfaces/User.interface";
 import { apiClient } from "./client";
 import { get, patch, post } from "./common";
 import { isResponseOk } from "./utils";
-import { addHoursToDate } from "../utils/utils";
 import { resendCooldownSeconds } from "../configs/verificationConfig";
 
 /*------------------------- login-logout section -------------------------------------*/
@@ -28,30 +27,12 @@ export const login = async (email: string, password: string, role: string) => {
     throw new ApiErrorResponse(res.code, res.error || "Unknown error");
   }
 
-  // Set the access token to the session storage
-  if (res.data?.access_token) {
-    sessionStorage.setItem("accessToken", res.data.access_token);
-    sessionStorage.setItem(
-      "token_expires",
-      addHoursToDate(new Date(), 1 / (60 * 20)).toString(),
-    );
-  }
-
   return res;
 };
 
-export const isLoggedIn = () => {
-  return sessionStorage.getItem("accessToken") !== null;
-};
-
-export const logout = () => {
-  sessionStorage.removeItem("accessToken");
-  sessionStorage.removeItem("token_expires");
+export const logout = async () => {
   sessionStorage.removeItem("user");
-};
-
-export const getToken = () => {
-  return sessionStorage.getItem("accessToken");
+  await apiClient.post(BACKEND_BASE_URL + "/proteng-user-mgmt/auth/logout");
 };
 
 export const getMe = async () => {
@@ -145,14 +126,6 @@ export const successVerification = async (token: string) => {
 
   if (!isResponseOk(res)) {
     throw new ApiErrorResponse(res.code, res.error || "Unknown error");
-  }
-
-  if (res.data?.access_token) {
-    sessionStorage.setItem("accessToken", res.data.access_token);
-    sessionStorage.setItem(
-      "token_expires",
-      addHoursToDate(new Date(), 1 / (60 * 20)).toString(),
-    );
   }
 
   return res;
