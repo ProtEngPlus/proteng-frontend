@@ -78,7 +78,7 @@ export function ProteinSequenceOverlay({
                     {"]"}
                   </div>
                 )}
-                <div className="items-left w-[90%] border border-pep-gray-border rounded-lg p-4 break-all leading-7 tracking-wide">
+                <div className="items-left w-[90%] border border-pep-gray-border rounded-lg p-4 break-all leading-7 tracking-wide max-h-[50vh] overflow-y-auto overscroll-contain">
                   {proteinSequence.split("").map((char, index) => (
                     <span
                       key={"prot+" + index}
