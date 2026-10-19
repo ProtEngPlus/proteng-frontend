@@ -60,6 +60,7 @@ export default function InputProtein({
     getValues,
     watch,
     trigger,
+    clearErrors,
   } = useFormContext();
 
   // to display query result
@@ -105,6 +106,7 @@ export default function InputProtein({
       if (data?.data) {
         setValue("input_protein", data.data.sequence);
         setIsError({ isValidate: true, errorMessage: "" });
+        clearErrors("input_protein_field");
         return data.data.sequence as string;
       }
 
@@ -147,6 +149,7 @@ export default function InputProtein({
       if (sequence) {
         setValue("input_protein", sequence);
         setIsError({ isValidate: true, errorMessage: "" });
+        clearErrors("input_protein_field");
         return sequence;
       }
     }
@@ -160,6 +163,7 @@ export default function InputProtein({
   };
 
   const switchInputMode = (mode: InputMode) => {
+    clearErrors("input_protein_field");
     setValue(
       lastInputFields[inputMode as InputMode],
       getValues("input_protein_field") ?? "",
