@@ -124,7 +124,7 @@ export default function InputProtein({
     },
   };
 
-  const inputProteinFieldClassName = `w-full min-w-fit px-3 bg-white border font-light placeholder:text-placeholder rounded-md focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label ${
+  const inputProteinFieldClassName = `block w-full min-w-fit px-3 bg-white border font-light placeholder:text-placeholder rounded-md focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label ${
     (errors.input_protein_field && inputMode === "prot_seq") ||
     (!isError.isValidate && inputMode === "uniprot_id")
       ? "border-error"
@@ -168,7 +168,7 @@ export default function InputProtein({
 
             <div className="grow">
               {onEdit ? (
-                <div className="grow">
+                <div className="grow relative">
                   {inputMode === "uniprot_id" ? (
                     <input
                       {...inputProteinFieldProps}
@@ -178,7 +178,7 @@ export default function InputProtein({
                     <textarea
                       {...inputProteinFieldProps}
                       rows={2}
-                      className={`block max-h-48 resize-y overflow-y-auto break-all py-3 ${inputProteinFieldClassName}`}
+                      className={`max-h-48 resize-y overflow-y-auto break-all py-3 ${inputProteinFieldClassName}`}
                     />
                   )}
                   {errors.input_protein_field && inputMode === "prot_seq" ? (
@@ -192,6 +192,12 @@ export default function InputProtein({
                       {isError.errorMessage}
                     </span>
                   ) : null}
+                  {inputProtein &&
+                    (inputMode === "prot_seq" || isError.isValidate) && (
+                      <span className="absolute right-0 font-light text-label text-xs">
+                        Length: {inputProtein.length}
+                      </span>
+                    )}
                 </div>
               ) : (
                 <div className="line-clamp-2 break-all overflow-hidden max-w-full">
