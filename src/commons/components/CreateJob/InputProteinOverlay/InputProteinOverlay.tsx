@@ -1,7 +1,7 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Modal } from "flowbite";
 import type { ModalOptions, ModalInterface } from "flowbite";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export type InputProteinOverlayProps = {
   inputProtein: string;
@@ -16,6 +16,7 @@ export function InputProteinOverlay({
   inputProteinProps: InputProteinOverlayProps;
 }) {
   const { inputProtein, onClose } = inputProteinProps;
+  const sequenceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const $modalElement = document.querySelector("input-protein-modal");
@@ -44,6 +45,7 @@ export function InputProteinOverlay({
   useEffect(() => {
     if (isVisible) {
       const handleWheel = (event: WheelEvent) => {
+        if (sequenceRef.current?.contains(event.target as Node)) return;
         event.preventDefault(); // Prevent scrolling
       };
       window.addEventListener("wheel", handleWheel, { passive: false });
@@ -61,7 +63,7 @@ export function InputProteinOverlay({
         className="fixed top-0 right-0 left-0 z-[90] flex justify-center items-center w-full h-full bg-gray-900/50 mt-0"
       >
         <div className="space-y-5 place-items-center place-self-center w-[644px] place-content-center text-center">
-          <div className="bg-pep-blue-light opacity-100 px-5 py-8 m-auto z-[100]">
+          <div className="bg-pep-blue-light opacity-100 px-5 py-8 m-auto z-[100] rounded-lg">
             <Icon
               id="close-button"
               icon="streamline:delete-1-solid"
@@ -78,10 +80,16 @@ export function InputProteinOverlay({
                   Protein Sequence
                 </label>
               </div>
-              <div className="bg-white rounded-lg p-8 ">
-                <div className="rounded-lg border border-pep-gray-border py-3 pl-5 pr-4 flex-wrap break-words text-start">
+              <div className="space-y-2">
+                <div
+                  ref={sequenceRef}
+                  className="rounded-lg border border-pep-gray-border py-3 pl-5 pr-4 break-all text-start max-h-[50vh] overflow-y-auto overscroll-contain"
+                >
                   {inputProtein}
                 </div>
+                <p className="text-end font-light text-label text-xs">
+                  Length: {inputProtein.length}
+                </p>
               </div>
             </div>
           </div>
