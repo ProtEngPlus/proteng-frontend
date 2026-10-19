@@ -3,7 +3,6 @@ import Button from "../../Button/Button";
 import { useFormContext } from "react-hook-form";
 import DownloadCSVButton from "../../Button/DownloadCSVButton";
 import ViewButton from "../../Button/ViewButton";
-import searchIcon from "../../../../assets/images/CreateJob/searchIcon.svg";
 import { useEffect, useState } from "react";
 import { getUniProtId } from "../../../api/job";
 import QueryResultTable from "./QueryResultTable";
@@ -72,12 +71,15 @@ export default function InputProtein({
 
   useEffect(() => {
     if (inputMode === "prot_seq") {
-      setValue("input_protein", getValues("input_protein_field"));
+      setValue(
+        "input_protein",
+        (getValues("input_protein_field") ?? "").replace(/\s/g, ""),
+      );
     }
   }, [inputProteinField, inputMode]);
 
   const getUniProt = async (inputId: string) => {
-    const data = await getUniProtId(inputId);
+    const data = await getUniProtId(inputId.trim());
 
     if (data.data) {
       setValue("input_protein", data.data.sequence);
@@ -86,6 +88,48 @@ export default function InputProtein({
       setIsError({ isValidate: false, errorMessage: data.message });
     }
   };
+
+  const inputProteinFieldProps = {
+    id: "input_protein_field",
+    disabled: !canEditInputProtein,
+    placeholder: "Input Protein*",
+    autoComplete: "off",
+    spellCheck: false,
+    ...register("input_protein_field", {
+      required: inputMode === "prot_seq" ? "Protein input is required." : false,
+
+      validate:
+        inputMode === "prot_seq"
+          ? (value) => {
+              const sequence = value.replace(/\s/g, "");
+              const invalidAminoAcids = /[BJOUXZ]/i.test(sequence);
+              const containsExactATGC = /ATGC/i.test(sequence);
+
+              if (invalidAminoAcids || containsExactATGC) {
+                return "Incorrect protein sequence format.";
+              }
+
+              return true;
+            }
+          : !isError.isValidate
+            ? () => isError.errorMessage
+            : undefined,
+    }),
+    onBlur: () => {
+      if (inputMode === "prot_seq") {
+        trigger("input_protein_field");
+      } else {
+        getUniProt(inputProteinField);
+      }
+    },
+  };
+
+  const inputProteinFieldClassName = `w-full min-w-fit px-3 bg-white border font-light placeholder:text-placeholder rounded-md focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label ${
+    (errors.input_protein_field && inputMode === "prot_seq") ||
+    (!isError.isValidate && inputMode === "uniprot_id")
+      ? "border-error"
+      : "border-gray-border"
+  }`;
 
   // query result filter
   const [isQueryResultVisible, setQueryResultVisible] = useState(false);
@@ -125,62 +169,18 @@ export default function InputProtein({
             <div className="grow">
               {onEdit ? (
                 <div className="grow">
-                  <div className="relative">
+                  {inputMode === "uniprot_id" ? (
                     <input
-                      id="input_protein_field"
-                      disabled={!canEditInputProtein}
-                      placeholder="Input Protein*"
-                      className={`text-wrap h-[50px] w-full min-w-fit pl-3 pr-10 bg-white border font-light placeholder:text-placeholder rounded-md focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label ${
-                        (errors.input_protein_field &&
-                          inputMode === "prot_seq") ||
-                        (!isError.isValidate && inputMode === "uniprot_id")
-                          ? "border-error"
-                          : "border-gray-border"
-                      }`}
-                      {...register("input_protein_field", {
-                        required:
-                          inputMode === "prot_seq"
-                            ? "Protein input is required."
-                            : false,
-
-                        validate:
-                          inputMode === "prot_seq"
-                            ? (value) => {
-                                const invalidAminoAcids = /[BJOUXZ]/i.test(
-                                  value,
-                                );
-                                const containsExactATGC = /ATGC/i.test(value);
-
-                                if (invalidAminoAcids || containsExactATGC) {
-                                  return "Incorrect protein sequence format.";
-                                }
-
-                                return true;
-                              }
-                            : !isError.isValidate
-                              ? () => isError.errorMessage
-                              : undefined,
-                      })}
-                      onBlur={() => {
-                        if (inputMode === "prot_seq") {
-                          trigger("input_protein_field");
-                        } else {
-                          getUniProt(inputProteinField);
-                        }
-                      }}
-                      autoComplete="off"
+                      {...inputProteinFieldProps}
+                      className={`h-[50px] ${inputProteinFieldClassName}`}
                     />
-
-                    <img
-                      src={searchIcon}
-                      alt="search"
-                      className="absolute top-1/2 right-3 transform -translate-y-1/2 cursor-pointer"
-                      onClick={() =>
-                        inputMode === "uniprot_id" &&
-                        getUniProt(inputProteinField)
-                      }
+                  ) : (
+                    <textarea
+                      {...inputProteinFieldProps}
+                      rows={2}
+                      className={`block max-h-48 resize-y overflow-y-auto break-all py-3 ${inputProteinFieldClassName}`}
                     />
-                  </div>
+                  )}
                   {errors.input_protein_field && inputMode === "prot_seq" ? (
                     <span className="absolute font-light text-error text-xs">
                       {typeof errors.input_protein_field.message === "string"
@@ -238,16 +238,12 @@ export default function InputProtein({
                   text="UniprotID"
                   className="!font-light !p-0 w-[100px] text-sm disabled:bg-white !disabled:text-black"
                 />
-                <ViewButton
-                  inputProtein={inputProtein}
-                  disable={
-                    (inputMode === "prot_seq" &&
-                      (!!errors.input_protein_field ||
-                        !watch("input_protein"))) ||
-                    (inputMode === "uniprot_id" && !isError.isValidate) ||
-                    !watch("input_protein")
-                  }
-                />
+                {inputMode === "uniprot_id" && (
+                  <ViewButton
+                    inputProtein={inputProtein}
+                    disable={!isError.isValidate || !watch("input_protein")}
+                  />
+                )}
               </div>
             ) : hasQueryResult ? (
               <div className="flex items-center space-x-3">
