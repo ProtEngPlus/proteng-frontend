@@ -3,7 +3,7 @@ import Button from "../../Button/Button";
 import { useFormContext } from "react-hook-form";
 import DownloadCSVButton from "../../Button/DownloadCSVButton";
 import ViewButton from "../../Button/ViewButton";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getUniProtId } from "../../../api/job";
 import QueryResultTable from "./QueryResultTable";
 import { State } from "../../../interfaces/Job.interface";
@@ -78,15 +78,69 @@ export default function InputProtein({
     }
   }, [inputProteinField, inputMode]);
 
-  const getUniProt = async (inputId: string) => {
-    const data = await getUniProtId(inputId.trim());
+  const [isFetchingUniProt, setFetchingUniProt] = useState(false);
+  const uniProtRequest = useRef(0);
+  const uniProtFetch = useRef<{
+    id: string;
+    promise: Promise<string | null>;
+  } | null>(null);
 
-    if (data.data) {
-      setValue("input_protein", data.data.sequence);
-      setIsError({ isValidate: true, errorMessage: "" });
-    } else {
-      setIsError({ isValidate: false, errorMessage: data.message });
+  const fetchUniProt = async (id: string, request: number) => {
+    try {
+      const data = await getUniProtId(id);
+      if (request !== uniProtRequest.current) return null;
+
+      if (data?.data) {
+        setValue("input_protein", data.data.sequence);
+        setIsError({ isValidate: true, errorMessage: "" });
+        return data.data.sequence as string;
+      }
+
+      setIsError({
+        isValidate: false,
+        errorMessage: data?.message ?? "Cannot fetch sequence with this id",
+      });
+      return null;
+    } catch (error) {
+      if (request !== uniProtRequest.current) return null;
+      setIsError({
+        isValidate: false,
+        errorMessage:
+          error instanceof Error
+            ? error.message
+            : "Cannot fetch sequence with this id",
+      });
+      return null;
+    } finally {
+      if (request === uniProtRequest.current) setFetchingUniProt(false);
     }
+  };
+
+  const getUniProt = (inputId: string) => {
+    const id = (inputId ?? "").trim();
+    const request = ++uniProtRequest.current;
+    setFetchingUniProt(true);
+
+    const promise = fetchUniProt(id, request);
+    uniProtFetch.current = { id, promise };
+    return promise;
+  };
+
+  const resolveUniProt = async () => {
+    const id = (inputProteinField ?? "").trim();
+    const current = uniProtFetch.current;
+
+    if (current && current.id === id) {
+      const sequence = await current.promise;
+      if (sequence) return sequence;
+    }
+
+    return getUniProt(id);
+  };
+
+  const cancelUniProt = () => {
+    uniProtRequest.current++;
+    setFetchingUniProt(false);
   };
 
   const inputProteinFieldProps = {
@@ -119,7 +173,7 @@ export default function InputProtein({
       if (inputMode === "prot_seq") {
         trigger("input_protein_field");
       } else {
-        getUniProt(inputProteinField);
+        resolveUniProt();
       }
     },
   };
@@ -192,12 +246,11 @@ export default function InputProtein({
                       {isError.errorMessage}
                     </span>
                   ) : null}
-                  {inputProtein &&
-                    (inputMode === "prot_seq" || isError.isValidate) && (
-                      <span className="absolute right-0 font-light text-label text-xs">
-                        Length: {inputProtein.length}
-                      </span>
-                    )}
+                  {inputProtein && inputMode === "prot_seq" && (
+                    <span className="absolute right-0 font-light text-label text-xs">
+                      Length: {inputProtein.length}
+                    </span>
+                  )}
                 </div>
               ) : (
                 <div className="line-clamp-2 break-all overflow-hidden max-w-full">
@@ -216,6 +269,7 @@ export default function InputProtein({
                   type="button"
                   onClick={() => {
                     if (canEditInputProtein) {
+                      cancelUniProt();
                       setValue("input_mode", "prot_seq");
                       setValue("input_protein_field", inputProteinProtSeq);
                     }
@@ -233,9 +287,7 @@ export default function InputProtein({
                   buttonType={inputMode === "uniprot_id" ? "submit" : "cancel"}
                   type="button"
                   onClick={() => {
-                    if (inputMode === "uniprot_id") {
-                      getUniProt(inputProteinField);
-                    } else {
+                    if (inputMode !== "uniprot_id") {
                       setValue("input_mode", "uniprot_id");
                       setValue("input_protein_field", inputProteinUniprotId);
                       getUniProt(inputProteinUniprotId);
@@ -247,7 +299,9 @@ export default function InputProtein({
                 {inputMode === "uniprot_id" && (
                   <ViewButton
                     inputProtein={inputProtein}
-                    disable={!isError.isValidate || !watch("input_protein")}
+                    loading={isFetchingUniProt}
+                    disable={!inputProteinField?.trim()}
+                    resolveProtein={resolveUniProt}
                   />
                 )}
               </div>

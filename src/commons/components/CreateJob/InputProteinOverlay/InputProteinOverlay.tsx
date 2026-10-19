@@ -80,11 +80,16 @@ export function InputProteinOverlay({
                   Protein Sequence
                 </label>
               </div>
-              <div
-                ref={sequenceRef}
-                className="rounded-lg border border-pep-gray-border py-3 pl-5 pr-4 break-all text-start max-h-[50vh] overflow-y-auto overscroll-contain"
-              >
-                {inputProtein}
+              <div className="space-y-2">
+                <div
+                  ref={sequenceRef}
+                  className="rounded-lg border border-pep-gray-border py-3 pl-5 pr-4 break-all text-start max-h-[50vh] overflow-y-auto overscroll-contain"
+                >
+                  {inputProtein}
+                </div>
+                <p className="text-end font-light text-label text-xs">
+                  Length: {inputProtein.length}
+                </p>
               </div>
             </div>
           </div>
