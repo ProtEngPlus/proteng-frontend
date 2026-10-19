@@ -63,7 +63,7 @@ export function InputProteinOverlay({
         className="fixed top-0 right-0 left-0 z-[90] flex justify-center items-center w-full h-full bg-gray-900/50 mt-0"
       >
         <div className="space-y-5 place-items-center place-self-center w-[644px] place-content-center text-center">
-          <div className="bg-pep-blue-light opacity-100 px-5 py-8 m-auto z-[100]">
+          <div className="bg-pep-blue-light opacity-100 px-5 py-8 m-auto z-[100] rounded-lg">
             <Icon
               id="close-button"
               icon="streamline:delete-1-solid"
