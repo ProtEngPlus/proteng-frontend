@@ -18,6 +18,18 @@ import {
 } from "./QueryResultOverlay";
 import { DownloadQueryResult } from "../../../../pages/CreateJob/services/DownloadQueryResult";
 
+type InputMode = "prot_seq" | "uniprot_id";
+
+const lastInputFields: Record<InputMode, string> = {
+  prot_seq: "last_prot_seq_input",
+  uniprot_id: "last_uniprot_id_input",
+};
+
+const defaultInputs: Record<InputMode, string> = {
+  prot_seq: inputProteinProtSeq,
+  uniprot_id: inputProteinUniprotId,
+};
+
 interface Props {
   isJobDetail: boolean;
   stage?: number;
@@ -126,13 +138,17 @@ export default function InputProtein({
     return promise;
   };
 
-  const resolveUniProt = async () => {
-    const id = (inputProteinField ?? "").trim();
+  const resolveUniProt = async (inputId: string = inputProteinField) => {
+    const id = (inputId ?? "").trim();
     const current = uniProtFetch.current;
 
     if (current && current.id === id) {
       const sequence = await current.promise;
-      if (sequence) return sequence;
+      if (sequence) {
+        setValue("input_protein", sequence);
+        setIsError({ isValidate: true, errorMessage: "" });
+        return sequence;
+      }
     }
 
     return getUniProt(id);
@@ -141,6 +157,18 @@ export default function InputProtein({
   const cancelUniProt = () => {
     uniProtRequest.current++;
     setFetchingUniProt(false);
+  };
+
+  const switchInputMode = (mode: InputMode) => {
+    setValue(
+      lastInputFields[inputMode as InputMode],
+      getValues("input_protein_field") ?? "",
+    );
+    setValue("input_mode", mode);
+    setValue(
+      "input_protein_field",
+      getValues(lastInputFields[mode]) ?? defaultInputs[mode],
+    );
   };
 
   const inputProteinFieldProps = {
@@ -268,10 +296,9 @@ export default function InputProtein({
                   buttonType={inputMode === "prot_seq" ? "submit" : "cancel"}
                   type="button"
                   onClick={() => {
-                    if (canEditInputProtein) {
+                    if (canEditInputProtein && inputMode !== "prot_seq") {
                       cancelUniProt();
-                      setValue("input_mode", "prot_seq");
-                      setValue("input_protein_field", inputProteinProtSeq);
+                      switchInputMode("prot_seq");
                     }
                   }}
                   text="Amino Acid Sequence"
@@ -288,9 +315,8 @@ export default function InputProtein({
                   type="button"
                   onClick={() => {
                     if (inputMode !== "uniprot_id") {
-                      setValue("input_mode", "uniprot_id");
-                      setValue("input_protein_field", inputProteinUniprotId);
-                      getUniProt(inputProteinUniprotId);
+                      switchInputMode("uniprot_id");
+                      resolveUniProt(getValues("input_protein_field"));
                     }
                   }}
                   text="UniprotID"
