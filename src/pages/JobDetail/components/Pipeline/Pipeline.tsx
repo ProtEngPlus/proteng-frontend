@@ -217,6 +217,7 @@ export default function Pipeline({
         name: name,
         description: description,
         ref_job_id: job.id,
+        assay_type_id: job.assay_type_id,
         state: job.state,
         stage_id: job.stage_id,
         artifact: job.artifact ?? {},
