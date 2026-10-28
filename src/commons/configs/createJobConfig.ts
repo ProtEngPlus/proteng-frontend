@@ -683,15 +683,6 @@ export const createJobConfig: CreateJobConfig = {
             },
           },
           {
-            name: "Amino Acids",
-            id: "amino_acid_set",
-            type: "dropdown",
-            description:
-              "The amino acids a position can mutate to. 20 standard are the amino acids proteins are normally made of. U (selenocysteine) is rare in nature and needs special methods to be made in a lab.",
-            dropdownItems: ["20 standard", "20 standard + U"],
-            default: "20 standard",
-          },
-          {
             name: "Temperature",
             id: "temperature",
             type: "dropdown",
