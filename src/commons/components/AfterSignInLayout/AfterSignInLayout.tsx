@@ -50,6 +50,11 @@ export default function RootLayout({
       name: "Dashboard",
       path: "/dashboard",
     },
+    {
+      icon: "ph:books",
+      name: "Assay Library",
+      path: "/assay-library",
+    },
   ];
 
   const handleToggleSidebar = () => {

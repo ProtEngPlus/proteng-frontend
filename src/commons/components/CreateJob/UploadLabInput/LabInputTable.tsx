@@ -1,4 +1,30 @@
 import { Icon } from "@iconify/react";
+import { LabRow } from "../../../interfaces/AssayType.interface";
+
+const sourceLabels = {
+  upload: "Uploaded",
+  manual: "Manual",
+  library: "Library",
+};
+
+function SourceBadge({ row }: { row: LabRow }) {
+  if (!row.source) return null;
+  const style =
+    row.source === "library"
+      ? "bg-pep-blue-light text-pep-blue"
+      : "bg-pep-gray-light text-pep-dark-gray";
+  return (
+    <span
+      className={`inline-block max-w-full truncate rounded-full px-2 py-0.5 text-xs ${style}`}
+      title={row.library_job_name}
+    >
+      {sourceLabels[row.source]}
+      {row.source === "library" && row.library_job_name
+        ? `: ${row.library_job_name}`
+        : ""}
+    </span>
+  );
+}
 
 export function LabInputTable({
   isExample,
@@ -6,13 +32,16 @@ export function LabInputTable({
   inputProtein,
   setProteinVisible,
   isForConclusion,
+  onRemove,
 }: {
   isExample: boolean;
-  data: { sequence: string; score: number }[];
+  data: LabRow[];
   inputProtein?: string;
   setProteinVisible?: React.Dispatch<React.SetStateAction<boolean>>;
   isForConclusion?: boolean;
+  onRemove?: (index: number) => void;
 }) {
+  const showSource = !isExample && data?.some((row) => row.source);
   return (
     <div
       id={`${isExample ? "table-example" : "lab-input-table"}`}
@@ -29,6 +58,12 @@ export function LabInputTable({
               <th scope="col" className="font-normal text-base">
                 Score
               </th>
+
+              {showSource && (
+                <th scope="col" className="font-normal text-base">
+                  Source
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="font-light text-sm leading-7 text-pep-dark-gray text-center bg-white">
@@ -55,12 +90,28 @@ export function LabInputTable({
                   ""
                 )}
               </td>
+              {showSource && <td />}
             </tr>
 
             {data?.map((value, index) => (
               <tr key={index} className="border-t h-[46px]">
                 <td className="truncate px-5">{value.sequence}</td>
                 <td className="truncate px-5">{value.score}</td>
+                {showSource && (
+                  <td className="truncate px-3">
+                    <div className="flex items-center justify-center space-x-2">
+                      <SourceBadge row={value} />
+                      {onRemove && (
+                        <Icon
+                          data-testid="remove-row"
+                          icon="streamline:delete-1-solid"
+                          className="size-[15px] min-w-[15px] cursor-pointer text-error"
+                          onClick={() => onRemove(index)}
+                        />
+                      )}
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
