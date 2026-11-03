@@ -62,6 +62,7 @@ import {
 } from "../../../../commons/utils/histogram";
 import { createRoot } from "react-dom/client";
 import JSZip from "jszip";
+import NotificationToggle from "../../../../commons/components/Job/NotificationToggle/NotificationToggle";
 
 export default function Pipeline({
   job,
@@ -411,24 +412,11 @@ export default function Pipeline({
       <div className="space-y-8">
         <div className="space-y-24">
           <div className="flex space-x-6 items-center justify-end">
-            <Icon
-              data-testid={`isnotification-${isNotificationOn}`}
-              icon={
-                isNotificationOn
-                  ? "carbon:notification-filled"
-                  : "carbon:notification-off-filled"
-              }
-              className={` ${
-                job.state === "COMPLETED"
-                  ? "cursor-not-allowed"
-                  : "cursor-pointer"
-              }  size-[30px] ${
-                isNotificationOn ? "text-pep-orange" : "text-error"
-              }`}
-              onClick={() =>
-                job.state !== "COMPLETED" &&
-                setValue("is_notification_on", !isNotificationOn)
-              }
+            <NotificationToggle
+              isOn={isNotificationOn}
+              runType={runType}
+              disabled={job.state === "COMPLETED"}
+              onToggle={() => setValue("is_notification_on", !isNotificationOn)}
             />
             <div className="flex space-x-2 items-center">
               <Button
