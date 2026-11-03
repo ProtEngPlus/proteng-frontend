@@ -100,14 +100,24 @@ export default function EvaluationPluginSelector({
                 {!readOnly && (
                   <button
                     type="button"
-                    className="px-3 py-2 rounded-md hover:bg-pep-blue-light focus-visible:outline focus-visible:outline-pep-blue"
+                    className="size-11 shrink-0 inline-flex items-center justify-center rounded-r-md border-l border-pep-gray-border hover:bg-pep-blue-light focus-visible:outline focus-visible:outline-pep-blue disabled:opacity-50"
                     aria-label={`Remove plugin ${plugin}`}
                     disabled={disabled || isLoading}
                     onClick={() =>
                       onChange(selected.filter((item) => item !== plugin))
                     }
                   >
-                    ×
+                    <svg
+                      aria-hidden="true"
+                      className="size-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    >
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </svg>
                   </button>
                 )}
               </div>
