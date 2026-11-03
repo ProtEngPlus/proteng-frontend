@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { getEvaluationPlugins } from "../../../../../commons/api/evaluation";
 import { getErrorMessage } from "../../../../../commons/api/utils";
+import EvaluationPluginSelector from "../../../../../commons/components/EvaluationPluginSelector/EvaluationPluginSelector";
 import Context from "../../../../../commons/components/CreateJob/Context/Context";
 
 export default function Evaluation({
@@ -67,17 +68,6 @@ export default function Evaluation({
     };
   }, [register, clearErrors, trigger, plugins, isLoading, errorMessage]);
 
-  const options = [...new Set([...plugins, ...selected])];
-  const togglePlugin = (plugin: string) => {
-    const next = selected.includes(plugin)
-      ? selected.filter((item) => item !== plugin)
-      : options.filter((item) => item === plugin || selected.includes(item));
-    setValue("evaluation_plugins", next, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-  };
-
   return (
     <Context
       title="Evaluation"
@@ -87,35 +77,22 @@ export default function Evaluation({
     >
       <p className="text-sm text-pep-dark-gray">
         Selected plugins evaluate the generated mutants after mutation. Leave
-        all plugins unchecked to skip evaluation.
+        the selection empty to skip evaluation.
       </p>
-      {!isEdit ? (
-        <div>
-          {selected.length > 0 ? selected.join(", ") : "No plugins selected"}
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {isLoading && <div>Loading plugins...</div>}
-          {!isLoading && !errorMessage && options.length === 0 && (
-            <div>No evaluation plugin is available</div>
-          )}
-          {options.map((plugin) => (
-            <label key={plugin} className="flex items-center gap-3 w-fit">
-              <input
-                type="checkbox"
-                className="size-5 rounded-md border-pep-blue cursor-pointer"
-                checked={selected.includes(plugin)}
-                disabled={isLoading}
-                onChange={() => togglePlugin(plugin)}
-              />
-              {plugin}
-              {!isLoading && !errorMessage && !plugins.includes(plugin) && (
-                <span className="text-error text-sm">Unavailable</span>
-              )}
-            </label>
-          ))}
-        </div>
-      )}
+      <EvaluationPluginSelector
+        id="create-evaluation-plugins"
+        plugins={plugins}
+        selected={selected}
+        isLoading={isLoading}
+        hasRegistryError={!!errorMessage}
+        readOnly={!isEdit}
+        onChange={(next) =>
+          setValue("evaluation_plugins", next, {
+            shouldDirty: true,
+            shouldValidate: true,
+          })
+        }
+      />
       {errorMessage && (
         <div role="alert" className="text-error text-sm space-x-3">
           <span>{errorMessage}</span>

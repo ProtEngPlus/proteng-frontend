@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import EvaluationPluginSelector from "../../../../commons/components/EvaluationPluginSelector/EvaluationPluginSelector";
 import Button from "../../../../commons/components/Button/Button";
 import {
   getEvaluationPlugins,
@@ -74,13 +75,6 @@ export function RerunEvaluationOverlay({
     };
   }, [isVisible, jobid]);
 
-  const togglePlugin = (plugin: string) =>
-    setSelectedPlugins((prev) =>
-      prev.includes(plugin)
-        ? prev.filter((item) => item !== plugin)
-        : plugins.filter((item) => item === plugin || prev.includes(item)),
-    );
-
   const handleConfirm = async () => {
     setIsSubmitting(true);
     setErrorMessage("");
@@ -118,31 +112,16 @@ export function RerunEvaluationOverlay({
             <div className="bg-white rounded-lg p-8 font-light text-start space-y-6">
               <div className="grid grid-cols-[1fr,2fr] gap-x-3 items-start">
                 <div>Plugins:</div>
-                <div className="space-y-2">
-                  {isLoading && (
-                    <div className="text-pep-gray">Loading plugins...</div>
-                  )}
-                  {!isLoading && !errorMessage && plugins.length === 0 && (
-                    <div className="text-pep-gray">No plugin is available</div>
-                  )}
-                  {plugins.map((plugin) => (
-                    <div key={plugin} className="flex items-center gap-3">
-                      <input
-                        id={`rerun-plugin-${plugin}`}
-                        type="checkbox"
-                        className="w-5 h-5 rounded-md border-pep-blue border cursor-pointer"
-                        checked={selectedPlugins.includes(plugin)}
-                        onChange={() => togglePlugin(plugin)}
-                      />
-                      <label
-                        htmlFor={`rerun-plugin-${plugin}`}
-                        className="cursor-pointer"
-                      >
-                        {plugin}
-                      </label>
-                    </div>
-                  ))}
-                </div>
+                <EvaluationPluginSelector
+                  key={`${jobid}-${isVisible}`}
+                  id="rerun-evaluation-plugins"
+                  plugins={plugins}
+                  selected={selectedPlugins}
+                  onChange={setSelectedPlugins}
+                  isLoading={isLoading}
+                  hasRegistryError={plugins.length === 0 && !!errorMessage}
+                  disabled={isSubmitting}
+                />
               </div>
               <div className="grid grid-cols-[1fr,2fr] gap-x-3 items-center">
                 <label htmlFor="rerun-mutation">Mutation collection:</label>
