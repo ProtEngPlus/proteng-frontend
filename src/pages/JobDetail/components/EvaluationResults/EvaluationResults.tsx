@@ -17,6 +17,9 @@ import Pagination from "../../../../commons/components/Pagination/Pagination";
 import PageNumberDropDown from "../MutationResults/Input/PageNumberDropDown";
 import { ProteinSequenceOverlay } from "../Overlay/ProteinSequenceOverlay";
 import { formatDate } from "../../service/formatDate";
+import Button from "../../../../commons/components/Button/Button";
+import { State } from "../../../../commons/interfaces/Job.interface";
+import { RerunEvaluationOverlay } from "../Overlay/RerunEvaluationOverlay";
 
 const REFRESH_INTERVAL_MS = 5000;
 
@@ -94,7 +97,13 @@ const waitingLabel = (run: EvaluationRunInterface, plugin: string) => {
     : "Waiting";
 };
 
-export default function EvaluationResults({ jobid }: { jobid: string }) {
+export default function EvaluationResults({
+  jobid,
+  jobState,
+}: {
+  jobid: string;
+  jobState: State;
+}) {
   const [runs, setRuns] = useState<EvaluationRunInterface[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedRunId, setSelectedRunId] = useState("");
@@ -106,6 +115,8 @@ export default function EvaluationResults({ jobid }: { jobid: string }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [sequenceMutant, setSequenceMutant] =
     useState<MutationResultInterface | null>(null);
+  const [runsVersion, setRunsVersion] = useState(0);
+  const [isRerunVisible, setIsRerunVisible] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
@@ -123,7 +134,7 @@ export default function EvaluationResults({ jobid }: { jobid: string }) {
     return () => {
       isCancelled = true;
     };
-  }, [jobid]);
+  }, [jobid, runsVersion]);
 
   useEffect(() => {
     if (!selectedRunId) return;
@@ -154,6 +165,14 @@ export default function EvaluationResults({ jobid }: { jobid: string }) {
   }, [isOngoing]);
 
   const run = detail?.run.id === selectedRunId ? detail.run : undefined;
+  const hasOngoingRun = runs.some((item) => item.state === "ONGOING");
+  const canRerun = jobState === "COMPLETED" && !hasOngoingRun;
+  const rerunHint =
+    jobState !== "COMPLETED"
+      ? "Evaluation can be run after the job is completed"
+      : hasOngoingRun
+        ? "Wait until the running evaluation finishes"
+        : undefined;
   const mutants: EvaluationMutantInterface[] = [
     ...(run ? (detail?.mutants ?? []) : []),
   ].sort(
@@ -167,6 +186,19 @@ export default function EvaluationResults({ jobid }: { jobid: string }) {
 
   return (
     <div className="rounded-lg border border-pep-gray-border px-6 py-8 font-light space-y-6">
+      <RerunEvaluationOverlay
+        isVisible={isRerunVisible}
+        rerunEvaluationProps={{
+          jobid,
+          onClose: () => setIsRerunVisible(false),
+          onStarted: (started) => {
+            setIsRerunVisible(false);
+            if (started?.id) setSelectedRunId(started.id);
+            setCurrentPage(1);
+            setRunsVersion((version) => version + 1);
+          },
+        }}
+      />
       <ProteinSequenceOverlay
         isVisible={sequenceMutant !== null}
         proteinSequenceProps={{ onClose: () => setSequenceMutant(null) }}
@@ -175,29 +207,43 @@ export default function EvaluationResults({ jobid }: { jobid: string }) {
       />
       <div className="flex justify-between items-center border-l-4 border-pep-orange pl-6 text-xl gap-x-5">
         <div>Evaluation</div>
-        {runs.length > 0 && (
-          <div className="flex items-center gap-3 text-sm">
-            <label htmlFor="evaluation-run" className="text-pep-dark-gray">
-              Evaluation run
-            </label>
-            <select
-              id="evaluation-run"
-              className="rounded-lg border border-pep-gray-border px-3 py-1.5 text-sm font-light focus:border-pep-blue focus:ring-pep-blue"
-              value={selectedRunId}
-              onChange={(e) => {
-                setSelectedRunId(e.target.value);
-                setCurrentPage(1);
-              }}
-            >
-              {runs.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {formatDate(item.created_at)} · {item.plugins.join(", ")}
-                  {item.rerun ? " · rerun" : ""}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div className="flex items-center gap-5 text-sm">
+          {runs.length > 0 && (
+            <div className="flex items-center gap-3">
+              <label htmlFor="evaluation-run" className="text-pep-dark-gray">
+                Evaluation run
+              </label>
+              <select
+                id="evaluation-run"
+                className="rounded-lg border border-pep-gray-border px-3 py-1.5 text-sm font-light focus:border-pep-blue focus:ring-pep-blue"
+                value={selectedRunId}
+                onChange={(e) => {
+                  setSelectedRunId(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                {runs.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {formatDate(item.created_at)} · {item.plugins.join(", ")}
+                    {item.rerun ? " · rerun" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <Button
+            id="rerun-evaluation"
+            type="button"
+            buttonType="next"
+            text={runs.length > 0 ? "Rerun Evaluation" : "Run Evaluation"}
+            className="w-fit text-base inline-flex items-center whitespace-nowrap place-content-center text-center gap-2 disabled:opacity-50"
+            disabled={!canRerun}
+            title={rerunHint}
+            onClick={() => setIsRerunVisible(true)}
+          >
+            <Icon icon="ic:round-refresh" className="size-6" />
+          </Button>
+        </div>
       </div>
       <hr />
 
@@ -205,7 +251,8 @@ export default function EvaluationResults({ jobid }: { jobid: string }) {
         <div className="text-center">
           <div className="text-label text-xl">No evaluation run was found</div>
           <div className="font-light text-pep-gray">
-            Evaluation runs after mutation when the job has evaluation plugins
+            Evaluation runs after mutation when the job has evaluation plugins.
+            A completed job can also be evaluated with Run Evaluation.
           </div>
         </div>
       )}

@@ -400,7 +400,11 @@ export default function JobDetailPage() {
               role="tabpanel"
               aria-labelledby="evaluation-results-tab"
             >
-              <EvaluationResults key={evaluationVisit} jobid={job.id} />
+              <EvaluationResults
+                key={evaluationVisit}
+                jobid={job.id}
+                jobState={job.state}
+              />
             </div>
           </div>
         </div>
