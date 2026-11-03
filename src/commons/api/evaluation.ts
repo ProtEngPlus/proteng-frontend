@@ -1,4 +1,9 @@
-import { get, post } from "./common";
+import { apiClient } from "./client";
+import { isResponseOk } from "./utils";
+import {
+  ApiErrorResponse,
+  ApiResponse,
+} from "../interfaces/ApiResponse.interface";
 import { BACKEND_BASE_URL } from "../configs/apiConfig";
 import {
   EvaluationRunDetailInterface,
@@ -8,19 +13,34 @@ import {
 
 const CONDUCTOR_PATH = BACKEND_BASE_URL + "/proteng-conductor";
 
+const checkResponse = <T>(response: ApiResponse<T>) => {
+  if (!response || !isResponseOk(response)) {
+    throw new ApiErrorResponse(
+      response?.code ?? 0,
+      response?.message || response?.error || "Unable to load evaluation data",
+    );
+  }
+  return response;
+};
+
+const getEvaluationData = async <T>(path: string) => {
+  const response = await apiClient.get<ApiResponse<T>>(path);
+  return checkResponse(response.data);
+};
+
 export const getEvaluationPlugins = async () => {
   const path = CONDUCTOR_PATH + "/evaluation-plugins";
-  return await get<string[]>(path);
+  return await getEvaluationData<string[]>(path);
 };
 
 export const getJobEvaluations = async (jobId: string) => {
   const path = CONDUCTOR_PATH + `/jobs/${jobId}/evaluations`;
-  return await get<EvaluationRunInterface[]>(path);
+  return await getEvaluationData<EvaluationRunInterface[]>(path);
 };
 
 export const getEvaluation = async (evaluationRunId: string) => {
   const path = CONDUCTOR_PATH + `/evaluations/${evaluationRunId}`;
-  return await get<EvaluationRunDetailInterface>(path);
+  return await getEvaluationData<EvaluationRunDetailInterface>(path);
 };
 
 export const rerunEvaluation = async (
@@ -28,5 +48,9 @@ export const rerunEvaluation = async (
   input: RerunEvaluationInput,
 ) => {
   const path = CONDUCTOR_PATH + `/jobs/${jobId}/evaluations`;
-  return await post<RerunEvaluationInput>(path, input);
+  const response = await apiClient.post<ApiResponse<EvaluationRunInterface>>(
+    path,
+    input,
+  );
+  return checkResponse(response.data);
 };

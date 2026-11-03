@@ -20,6 +20,7 @@ import { formatDate } from "../../service/formatDate";
 import Button from "../../../../commons/components/Button/Button";
 import { State } from "../../../../commons/interfaces/Job.interface";
 import { RerunEvaluationOverlay } from "../Overlay/RerunEvaluationOverlay";
+import { getErrorMessage } from "../../../../commons/api/utils";
 
 const REFRESH_INTERVAL_MS = 5000;
 
@@ -110,63 +111,71 @@ export default function EvaluationResults({
   const [detail, setDetail] = useState<EvaluationRunDetailInterface | null>(
     null,
   );
-  const [refreshCount, setRefreshCount] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [sequenceMutant, setSequenceMutant] =
     useState<MutationResultInterface | null>(null);
   const [runsVersion, setRunsVersion] = useState(0);
   const [isRerunVisible, setIsRerunVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     let isCancelled = false;
-    getJobEvaluations(jobid)
-      .then((response) => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let shouldPoll = false;
+    setErrorMessage("");
+
+    const load = async () => {
+      try {
+        const response = await getJobEvaluations(jobid);
         if (isCancelled) return;
         const list: EvaluationRunInterface[] = response?.data ?? [];
+        shouldPoll =
+          list.some((item) => item.state === "ONGOING") ||
+          (jobState === "ONGOING" && list.length === 0);
         setRuns(list);
-        setSelectedRunId((current) => current || list[0]?.id || "");
-      })
-      .catch(console.error)
-      .finally(() => {
-        if (!isCancelled) setIsLoaded(true);
-      });
-    return () => {
-      isCancelled = true;
+        setIsLoaded(true);
+        const runId = list.some((item) => item.id === selectedRunId)
+          ? selectedRunId
+          : (list[0]?.id ?? "");
+        if (runId) {
+          const detailResponse = await getEvaluation(runId);
+          if (isCancelled) return;
+          if (!detailResponse.data) {
+            throw new Error("No evaluation details were returned");
+          }
+          setDetail(detailResponse.data);
+        } else {
+          setDetail(null);
+        }
+        setSelectedRunId(runId);
+        setErrorMessage("");
+      } catch (error) {
+        if (!isCancelled) {
+          setErrorMessage(
+            getErrorMessage(error) || "Unable to load evaluations",
+          );
+        }
+      } finally {
+        if (!isCancelled && shouldPoll) {
+          timer = setTimeout(load, REFRESH_INTERVAL_MS);
+        }
+      }
     };
-  }, [jobid, runsVersion]);
 
-  useEffect(() => {
-    if (!selectedRunId) return;
-    let isCancelled = false;
-    getEvaluation(selectedRunId)
-      .then((response) => {
-        const data: EvaluationRunDetailInterface | undefined = response?.data;
-        if (isCancelled || !data) return;
-        setDetail(data);
-        setRuns((prev) =>
-          prev.map((run) => (run.id === data.run.id ? data.run : run)),
-        );
-      })
-      .catch(console.error);
+    void load();
     return () => {
       isCancelled = true;
+      clearTimeout(timer);
     };
-  }, [selectedRunId, refreshCount]);
+  }, [jobid, jobState, selectedRunId, runsVersion]);
 
   const isOngoing = detail?.run.state === "ONGOING";
-  useEffect(() => {
-    if (!isOngoing) return;
-    const timer = setInterval(
-      () => setRefreshCount((count) => count + 1),
-      REFRESH_INTERVAL_MS,
-    );
-    return () => clearInterval(timer);
-  }, [isOngoing]);
 
   const run = detail?.run.id === selectedRunId ? detail.run : undefined;
   const hasOngoingRun = runs.some((item) => item.state === "ONGOING");
-  const canRerun = jobState === "COMPLETED" && !hasOngoingRun;
+  const canRerun =
+    isLoaded && !errorMessage && jobState === "COMPLETED" && !hasOngoingRun;
   const rerunHint =
     jobState !== "COMPLETED"
       ? "Evaluation can be run after the job is completed"
@@ -208,6 +217,13 @@ export default function EvaluationResults({
       <div className="flex justify-between items-center border-l-4 border-pep-orange pl-6 text-xl gap-x-5">
         <div>Evaluation</div>
         <div className="flex items-center gap-5 text-sm">
+          <button
+            type="button"
+            className="text-pep-blue underline"
+            onClick={() => setRunsVersion((version) => version + 1)}
+          >
+            Refresh
+          </button>
           {runs.length > 0 && (
             <div className="flex items-center gap-3">
               <label htmlFor="evaluation-run" className="text-pep-dark-gray">
@@ -247,7 +263,16 @@ export default function EvaluationResults({
       </div>
       <hr />
 
-      {isLoaded && runs.length === 0 && (
+      {errorMessage && (
+        <div
+          role="alert"
+          className="rounded-lg bg-red-50 px-4 py-3 text-sm text-error"
+        >
+          {errorMessage}
+        </div>
+      )}
+      {!isLoaded && !errorMessage && <div>Loading evaluation runs...</div>}
+      {isLoaded && !errorMessage && runs.length === 0 && (
         <div className="text-center">
           <div className="text-label text-xl">No evaluation run was found</div>
           <div className="font-light text-pep-gray">
@@ -276,7 +301,7 @@ export default function EvaluationResults({
                   {formatDate(run.complete_at)}
                 </div>
               )}
-              {isOngoing && (
+              {(isOngoing || hasOngoingRun) && (
                 <div className="flex items-center gap-1 text-pep-gray">
                   <Icon
                     icon="ic:round-refresh"

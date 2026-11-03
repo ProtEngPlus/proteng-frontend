@@ -6,7 +6,7 @@ import {
   rerunEvaluation,
 } from "../../../../commons/api/evaluation";
 import { getAllMutations } from "../../../../commons/api/mutation";
-import { getErrorMessage } from "../../../../commons/api/utils";
+import { getErrorMessage, isResponseOk } from "../../../../commons/api/utils";
 import { EvaluationRunInterface } from "../../../../commons/interfaces/Evaluation.interface";
 import { MutationInterface } from "../../../../commons/interfaces/Mutation.interface";
 
@@ -30,13 +30,27 @@ export function RerunEvaluationOverlay({
   const [mutationId, setMutationId] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!isVisible) return;
+    let isCancelled = false;
     setErrorMessage("");
     setMutationId("");
+    setPlugins([]);
+    setSelectedPlugins([]);
+    setMutations([]);
+    setIsLoading(true);
     Promise.all([getEvaluationPlugins(), getAllMutations({ job_id: jobid })])
       .then(([pluginResponse, mutationResponse]) => {
+        if (isCancelled) return;
+        if (!mutationResponse || !isResponseOk(mutationResponse)) {
+          throw new Error(
+            mutationResponse?.message ||
+              mutationResponse?.error ||
+              "Unable to load mutation collections",
+          );
+        }
         const list: string[] = pluginResponse?.data ?? [];
         setPlugins(list);
         setSelectedPlugins(list);
@@ -46,7 +60,18 @@ export function RerunEvaluationOverlay({
             .sort((a, b) => b.run_id - a.run_id),
         );
       })
-      .catch((error) => setErrorMessage(getErrorMessage(error)));
+      .catch((error) => {
+        if (!isCancelled)
+          setErrorMessage(
+            getErrorMessage(error) || "Unable to load evaluation options",
+          );
+      })
+      .finally(() => {
+        if (!isCancelled) setIsLoading(false);
+      });
+    return () => {
+      isCancelled = true;
+    };
   }, [isVisible, jobid]);
 
   const togglePlugin = (plugin: string) =>
@@ -64,7 +89,7 @@ export function RerunEvaluationOverlay({
         plugins: selectedPlugins,
         ...(mutationId && { mutation_id: mutationId }),
       });
-      onStarted(response.data as unknown as EvaluationRunInterface);
+      onStarted(response.data);
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {
@@ -94,7 +119,10 @@ export function RerunEvaluationOverlay({
               <div className="grid grid-cols-[1fr,2fr] gap-x-3 items-start">
                 <div>Plugins:</div>
                 <div className="space-y-2">
-                  {plugins.length === 0 && (
+                  {isLoading && (
+                    <div className="text-pep-gray">Loading plugins...</div>
+                  )}
+                  {!isLoading && !errorMessage && plugins.length === 0 && (
                     <div className="text-pep-gray">No plugin is available</div>
                   )}
                   {plugins.map((plugin) => (
@@ -133,7 +161,10 @@ export function RerunEvaluationOverlay({
                 </select>
               </div>
               {errorMessage && (
-                <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-error">
+                <div
+                  role="alert"
+                  className="rounded-lg bg-red-50 px-4 py-3 text-sm text-error"
+                >
                   {errorMessage}
                 </div>
               )}
@@ -144,6 +175,7 @@ export function RerunEvaluationOverlay({
                 id="cancel-rerun-evaluation"
                 buttonType="cancel"
                 text="Cancel"
+                disabled={isSubmitting}
                 onClick={onClose}
               />
               <Button
@@ -151,7 +183,9 @@ export function RerunEvaluationOverlay({
                 buttonType="submit"
                 text={isSubmitting ? "Starting..." : "Run"}
                 className="!font-light"
-                disabled={isSubmitting || selectedPlugins.length === 0}
+                disabled={
+                  isLoading || isSubmitting || selectedPlugins.length === 0
+                }
                 onClick={handleConfirm}
               />
             </div>
