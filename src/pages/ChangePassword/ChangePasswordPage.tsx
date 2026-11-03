@@ -13,6 +13,7 @@ import {
   SuccessOverlayProps,
 } from "../../commons/components/ModalOverlay/SuccessOverlay";
 import { changePassword } from "../../commons/api/auth";
+import { useAuth } from "../../commons/hooks/useAuth";
 import {
   passwordPolicyHint,
   passwordPolicyValidation,
@@ -28,6 +29,7 @@ export default function ChangePasswordPage() {
   const form = useForm<FormValues>();
   const { handleSubmit, setError, watch } = form;
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const [isConfirmVisible, setConfirmVisible] = useState(false);
   const [isSaving, setSaving] = useState(false);
@@ -63,9 +65,9 @@ export default function ChangePasswordPage() {
     id: "success-change-password",
     onClose: () => {
       setSuccessVisible(false);
-      navigate("/account-management");
+      logout();
     },
-    title: "Password Successfully Updated",
+    title: "Password updated. Please sign in again.",
   };
 
   const onSubmit = handleSubmit(async (data) => {
