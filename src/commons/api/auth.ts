@@ -5,9 +5,9 @@ import {
   ApiResponse,
 } from "../interfaces/ApiResponse.interface";
 import { UserLogin, UserRegister } from "../interfaces/User.interface";
+import { apiClient } from "./client";
 import { get, patch, post } from "./common";
 import { isResponseOk } from "./utils";
-import { addHoursToDate } from "../utils/utils";
 import { resendCooldownSeconds } from "../configs/verificationConfig";
 
 /*------------------------- login-logout section -------------------------------------*/
@@ -19,7 +19,7 @@ export const register = async (user: UserRegister) => {
 
 export const login = async (email: string, password: string, role: string) => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/login";
-  const axios_response = await axios.post(path, { email, password, role });
+  const axios_response = await apiClient.post(path, { email, password, role });
   const res = axios_response.data as ApiResponse<UserLogin>;
 
   // Check if the response is ok
@@ -27,42 +27,24 @@ export const login = async (email: string, password: string, role: string) => {
     throw new ApiErrorResponse(res.code, res.error || "Unknown error");
   }
 
-  // Set the access token to the session storage
-  if (res.data?.access_token) {
-    sessionStorage.setItem("accessToken", res.data.access_token);
-    sessionStorage.setItem(
-      "token_expires",
-      addHoursToDate(new Date(), 1 / (60 * 20)).toString(),
-    );
-  }
-
   return res;
 };
 
-export const isLoggedIn = () => {
-  return sessionStorage.getItem("accessToken") !== null;
-};
-
-export const logout = () => {
-  sessionStorage.removeItem("accessToken");
-  sessionStorage.removeItem("token_expires");
+export const logout = async () => {
   sessionStorage.removeItem("user");
-};
-
-export const getToken = () => {
-  return sessionStorage.getItem("accessToken");
+  await apiClient.post(BACKEND_BASE_URL + "/proteng-user-mgmt/auth/logout");
 };
 
 export const getMe = async () => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/me";
-  return await get<UserLogin>(path, true);
+  return await get<UserLogin>(path);
 };
 
 /*------------------------- password section -------------------------------------*/
 
 export const forgotPassword = async (email: string) => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/forgotpassword";
-  const axios_response = await axios.post(path, { email });
+  const axios_response = await apiClient.post(path, { email });
   const res = axios_response.data as ApiResponse<{ email: string }>;
 
   // Check if the response is ok
@@ -76,7 +58,7 @@ export const forgotPassword = async (email: string) => {
 export const resetPassword = async (password: string, token: string) => {
   const path =
     BACKEND_BASE_URL + `/proteng-user-mgmt/auth/resetpassword/${token}`;
-  const axios_response = await axios.patch(path, { password });
+  const axios_response = await apiClient.patch(path, { password });
   const res = axios_response.data as ApiResponse<null>;
 
   // Check if the response is ok
@@ -93,15 +75,10 @@ export const changePassword = async (
 ) => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/changepassword";
 
-  // Using the custom patch method and passing true to include headers
-  const res = await patch(
-    path,
-    {
-      current_password,
-      new_password,
-    },
-    true,
-  );
+  const res = await patch(path, {
+    current_password,
+    new_password,
+  });
 
   // Check if the response is ok
   if (!isResponseOk(res)) {
@@ -115,7 +92,7 @@ export const changePassword = async (
 
 export const sendVerification = async (email: string) => {
   const path = BACKEND_BASE_URL + "/proteng-user-mgmt/auth/sendverification";
-  const axios_response = await axios.post(path, {
+  const axios_response = await apiClient.post(path, {
     email,
   });
   const res = axios_response.data as ApiResponse<null>;
@@ -139,19 +116,11 @@ export const getRetryAfterSeconds = (error: unknown): number | null => {
 export const successVerification = async (token: string) => {
   const path =
     BACKEND_BASE_URL + `/proteng-user-mgmt/auth/verifyemail/${token}`;
-  const axios_response = await axios.post(path, {});
+  const axios_response = await apiClient.post(path, {});
   const res = axios_response.data as ApiResponse<UserLogin>;
 
   if (!isResponseOk(res)) {
     throw new ApiErrorResponse(res.code, res.error || "Unknown error");
-  }
-
-  if (res.data?.access_token) {
-    sessionStorage.setItem("accessToken", res.data.access_token);
-    sessionStorage.setItem(
-      "token_expires",
-      addHoursToDate(new Date(), 1 / (60 * 20)).toString(),
-    );
   }
 
   return res;

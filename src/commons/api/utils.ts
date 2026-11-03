@@ -24,13 +24,3 @@ export const isResponseOk = (response: ApiResponse<unknown>): boolean => {
     return false;
   }
 };
-
-type Headers = {
-  [key: string]: string;
-};
-
-export const getHeaderWithToken = (): Headers => {
-  return sessionStorage.getItem("accessToken") != undefined
-    ? { Authorization: `Bearer ${sessionStorage.getItem("accessToken")}` }
-    : {};
-};

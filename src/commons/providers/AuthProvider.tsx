@@ -1,11 +1,6 @@
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  getMe,
-  getToken,
-  login as loginApi,
-  logout as logoutApi,
-} from "../api/auth";
+import { getMe, login as loginApi, logout as logoutApi } from "../api/auth";
 import { User } from "../interfaces/User.interface";
 
 const PUBLIC_ROUTES = [
@@ -29,7 +24,7 @@ type AuthContextType = {
     password: string,
     role: string,
   ) => Promise<User | null>;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType>(
@@ -45,15 +40,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const token = getToken();
 
   useEffect(() => {
     if (PUBLIC_ROUTES.includes(location.pathname)) {
-      return;
-    }
-
-    if (!getToken()) {
-      navigate("/sign-in");
       return;
     }
 
@@ -65,6 +54,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
         if (response.code !== 200 || !response.data) {
+          setUser(null);
+          sessionStorage.removeItem("user");
           navigate("/sign-in");
           return;
         }
@@ -95,11 +86,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return userData as User;
   };
 
-  const logout = () => {
-    logoutApi();
-    setUser(null);
-    sessionStorage.removeItem("user");
-    navigate("/sign-in");
+  const logout = async () => {
+    try {
+      await logoutApi();
+    } catch (error) {
+      console.error("Logout request failed:", error);
+    } finally {
+      setUser(null);
+      navigate("/sign-in");
+    }
   };
 
   const refreshUser = async () => {
@@ -115,7 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!token,
+        isAuthenticated: !!user,
         loading,
         refreshUser,
         login,

@@ -17,28 +17,28 @@ const JOB_CONFIG_PATH =
 
 export const getAllJobs = async (params: JobSearchParams) => {
   const path = JOB_PATH;
-  return await get<JobInterface[]>(path, true, params as Params);
+  return await get<JobInterface[]>(path, params as Params);
 };
 
 export const getJob = async (id: string) => {
   const path = JOB_PATH + `/${id}`;
-  return await get<JobInterface>(path, true);
+  return await get<JobInterface>(path);
 };
 
 export const createJob = async (job: CreateJobInterface) => {
   const path = JOB_PATH;
   const requestBody = { job };
-  return await post<typeof requestBody>(path, requestBody, true);
+  return await post<typeof requestBody>(path, requestBody);
 };
 
 export const getAllConfigurationJobs = async () => {
   const path = JOB_PATH + "/configurations";
-  return await get<JobConfiguration[]>(path, true);
+  return await get<JobConfiguration[]>(path);
 };
 
 export const getUniProtId = async (uniProtId: string) => {
   const path = UNI_PROT_PATH + `/${uniProtId}`;
-  return await get<string>(path, true);
+  return await get<string>(path);
 };
 
 export const updateJobDetail = async (
@@ -46,23 +46,23 @@ export const updateJobDetail = async (
   updateData: Partial<JobInterface>,
 ) => {
   const path = JOB_PATH + `/${id}`;
-  return await put<JobInterface>(path, updateData, true);
+  return await put<JobInterface>(path, updateData);
 };
 
 export const deleteJob = async (id: string) => {
   const path = JOB_PATH + `/${id}`;
-  return await del(path, true);
+  return await del(path);
 };
 
 export const runJob = async (id: string) => {
   const path = JOB_PATH + `/${id}/run`;
-  return await post(path, null, true);
+  return await post(path, null);
 };
 
 export const createJobConfiguration = async (job: CreateJobConfiguration) => {
-  return await post<CreateJobConfiguration>(JOB_CONFIG_PATH, job, true);
+  return await post<CreateJobConfiguration>(JOB_CONFIG_PATH, job);
 };
 
 export const getDashboardContent = async () => {
-  return await get<Content>(DASHBOARD_PATH, true);
+  return await get<Content>(DASHBOARD_PATH);
 };
