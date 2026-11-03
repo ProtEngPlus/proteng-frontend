@@ -21,6 +21,7 @@ export type OptionValue =
   string | string[] | number | number[] | number[][] | boolean | undefined;
 
 export interface JobInterface {
+  evaluation_plugins?: string[];
   id: string;
   user_id: string;
   stage_id: number;

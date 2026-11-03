@@ -8,6 +8,7 @@ export const stepsForCreateJob = [
   "Upload Lab Input",
   "Top Model",
   "Mutation",
+  "Evaluation",
   "Conclusion",
 ];
 
@@ -22,6 +23,7 @@ export interface PipelineItems {
 }
 
 export interface CreateJobInterface {
+  evaluation_plugins?: string[];
   user_id: string;
   ref_job_id?: string;
   stage_id: number;
@@ -47,6 +49,7 @@ export interface CreateJobDetail {
   is_notification_on: boolean;
   ref_job_id?: string;
   artifact: Record<string, object> | null;
+  evaluation_plugins: string[];
 }
 
 export interface ReportJobDetail {
@@ -78,6 +81,7 @@ export interface JobOption {
 }
 
 export interface JobConfiguration {
+  evaluation_plugins?: string[];
   state: State;
   stage_id: number;
   id: string;
@@ -95,6 +99,7 @@ export interface JobConfiguration {
 }
 
 export interface CreateJobConfiguration {
+  evaluation_plugins?: string[];
   state: State;
   stage_id: number;
   user_id: string;

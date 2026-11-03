@@ -42,7 +42,7 @@ export function generateInitialJobConfig(
   pipelineItem: PipelineItem[];
 } {
   const initialJobOption = {} as JobOption;
-  const pipelineItem = defaultPipeline;
+  const pipelineItem = defaultPipeline.map((item) => ({ ...item }));
 
   // query result option
   if (stepConfig > 1 && jobConfig.options["query result"]) {
@@ -72,6 +72,7 @@ export function generateInitialJobConfig(
   });
 
   const initialJobDetail: CreateJobDetail = {
+    evaluation_plugins: [...(jobConfig.evaluation_plugins ?? [])],
     name: jobConfig.name,
     description: jobConfig.description,
     input_protein: jobConfig.input_protein,

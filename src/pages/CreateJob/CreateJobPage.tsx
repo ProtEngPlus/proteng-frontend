@@ -27,6 +27,7 @@ import ProteinQuery from "./component/CreateJobForm/ProteinQuery/ProteinQuery";
 import ProteinRepresentation from "./component/CreateJobForm/ProteinRepresentation/ProteinRepresentation";
 import TopModel from "./component/CreateJobForm/TopModel/TopModel";
 import Mutation from "./component/CreateJobForm/Mutation/Mutation";
+import Evaluation from "./component/CreateJobForm/Evaluation/Evaluation";
 import Button from "../../commons/components/Button/Button";
 import Conclusion from "./component/CreateJobForm/Conclusion/Conclusion";
 import UploadLabInput from "./component/CreateJobForm/UploadLabInput/UploadLabInput";
@@ -55,6 +56,9 @@ export default function CreateJobPage() {
   );
   const [jobOption, setJobOption] = useState<JobOption>(generateInitialJob());
   const [queryResult, setQueryResult] = useState<QueryResult>(); // for adding query result in create job request body
+
+  const conclusionStep = stepsForCreateJob.length;
+  const evaluationStep = stepsForCreateJob.indexOf("Evaluation") + 1;
 
   // fetch query result
   useEffect(() => {
@@ -91,10 +95,19 @@ export default function CreateJobPage() {
   // generate initial job
   const initialJobOption = (job?: JobConfiguration, stepConfig?: number) => {
     if (!isWithConfig) {
+      const detail = { ...defaultCreateJobDetail, evaluation_plugins: [] };
+      const options = generateInitialJob();
+      reset({
+        ...detail,
+        ...options,
+        file_name: "",
+        input_protein_field: detail.input_protein,
+        initial_input_protein: detail.input_protein,
+      });
+      setJobDetail(detail);
       setInitialStep(1);
-      setJobOption(generateInitialJob());
-      setPipeline(defaultPipeline);
-      setInitialStep(1);
+      setJobOption(options);
+      setPipeline(defaultPipeline.map((item) => ({ ...item })));
       setStep(1);
     } else if (job && stepConfig) {
       const data = generateInitialJobConfig(job, stepConfig);
@@ -149,6 +162,7 @@ export default function CreateJobPage() {
               lab_result: data["lab_result"],
               name: data["name"],
               run_type: data["run_type"],
+              evaluation_plugins: [...(data["evaluation_plugins"] ?? [])],
             };
 
             // Update newJobInfo
@@ -278,7 +292,7 @@ export default function CreateJobPage() {
       {step > 0 && (
         <div>
           <Stepper step={step} changeStep={setStep} />
-          {step < 6 && (
+          {step < conclusionStep && (
             <h1 className="font-light text-pep-orange text-xl">
               {stepsForCreateJob[step - 1]}
             </h1>
@@ -287,7 +301,7 @@ export default function CreateJobPage() {
 
           <FormProvider {...form}>
             <form className="py-5 gap-5 min-w-fit min-h-fit">
-              {step < 6 && (
+              {step < conclusionStep && (
                 <div className="rounded-lg border border-pep-gray-border px-6 py-8 space-y-2">
                   {step === 1 && (
                     <ProteinQuery
@@ -328,9 +342,10 @@ export default function CreateJobPage() {
                       step={step}
                     />
                   )}
+                  {step === evaluationStep && <Evaluation />}
                 </div>
               )}
-              {step === 6 && (
+              {step === conclusionStep && (
                 <Conclusion
                   isWithConfig={isWithConfig}
                   initialStep={initialStep}
@@ -348,7 +363,7 @@ export default function CreateJobPage() {
                   text="Cancel"
                   onClick={handleBack}
                 />
-                {step === 6 ? (
+                {step === conclusionStep ? (
                   <Button
                     id="handleConfirm"
                     buttonType="submit"
