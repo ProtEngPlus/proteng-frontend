@@ -1,10 +1,6 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Button from "../../../../../commons/components/Button/Button";
 import { useEffect, useRef, useState } from "react";
-import {
-  ConfirmOverlay,
-  ConfirmOverlayProps,
-} from "../../../../../commons/components/ModalOverlay/ConfirmOverlay";
 import Papa, { ParseResult } from "papaparse";
 import {
   InputProteinOverlay,
@@ -22,6 +18,9 @@ import onEditIcon from "../../../../../assets/images/CreateJob/onEditIcon.svg";
 import editIcon from "../../../../../assets/images/CreateJob/editIcon.svg";
 import { ViewLabResult, ViewLabResultOverlayProps } from "./ViewLabResultModal";
 import { UploadInputTemplate } from "../../../services/UploadInputTemplate";
+import LibraryPickerModal from "../../../../../commons/components/CreateJob/UploadLabInput/LibraryPickerModal";
+import { LabRow } from "../../../../../commons/interfaces/AssayType.interface";
+import { stackRows } from "../../../../../commons/utils/stackRows";
 
 export const exampleLabResult = [
   { sequence: "ASIQHFHW", score: 0.002914 },
@@ -50,19 +49,19 @@ export default function UploadLabInput({
 
   const labResult = watch("lab_result");
   const inputProtein = watch("input_protein");
+  const assayTypeId = watch("assay_type_id") ?? "";
 
   const [isExpand, setIsExpand] = useState(false);
   const [isEdit, setEdit] = useState(onEdit);
   const [isRead, setRead] = useState(false);
-  const [labResultForm, setLabResultForm] = useState<
-    { sequence: string; score: number }[]
-  >(labResult ?? []);
+  const [labResultForm, setLabResultForm] = useState<LabRow[]>(labResult ?? []);
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isError, setIsError] = useState({
     isValidate: true,
     errorMessage: "",
   });
+  const [skippedCount, setSkippedCount] = useState(0);
 
   const handleButtonClick = () => {
     if (fileInputRef.current) {
@@ -78,16 +77,8 @@ export default function UploadLabInput({
     }
   };
 
-  const checkValidate = (data: { sequence: string; score: number }[]) => {
-    // Regular expression for valid amino acid sequences
+  const formatError = (data: LabRow[]) => {
     const validSequenceRegex = /^(?!.*[BJOUXZ])[A-Z]+$/i;
-
-    if (data.length < minimumSize) {
-      return {
-        isValidate: false,
-        errorMessage: `Total sequences should match minimum training batch size !\nMinimum training batch size can be modify in Step-4 “Top Model”`,
-      };
-    }
 
     for (const { sequence, score } of data) {
       if (
@@ -99,15 +90,66 @@ export default function UploadLabInput({
         (sequence !== sequence.toUpperCase() &&
           sequence !== sequence.toLowerCase())
       ) {
-        return {
-          isValidate: false,
-          errorMessage: "Uploaded file mismatch !",
-        };
+        return "Uploaded file mismatch !";
       }
     }
 
-    return { isValidate: true, errorMessage: "" };
+    return "";
   };
+
+  const repeatedSequences = (data: LabRow[]) => {
+    const seen = new Set<string>();
+    const repeated = new Set<string>();
+    data.forEach(({ sequence }) => {
+      const key = sequence.toUpperCase();
+      if (seen.has(key)) repeated.add(key);
+      seen.add(key);
+    });
+    return [...repeated];
+  };
+
+  const sourceNames = {
+    upload: "Uploaded file",
+    manual: "Manual input",
+    library: "Library",
+  };
+
+  const commit = (rows: LabRow[], skipped = 0) => {
+    setLabResultForm(rows);
+    setSkippedCount(skipped);
+    const names = new Set(rows.map((row) => row.source));
+    setValue(
+      "file_name",
+      [...names]
+        .map((name) => (name ? sourceNames[name] : "recent_lab_result"))
+        .join(", "),
+    );
+
+    let errorMessage = "";
+    const repeated = repeatedSequences(rows);
+    if (repeated.length > 0) {
+      errorMessage = `Duplicate sequences are not allowed: ${repeated.slice(0, 3).join(", ")}${repeated.length > 3 ? ` and ${repeated.length - 3} more` : ""}`;
+    } else if (rows.length < minimumSize) {
+      errorMessage = `Total sequences should match minimum training batch size !\nMinimum training batch size can be modify in Step-4 “Top Model”`;
+    }
+
+    setIsError({ isValidate: errorMessage === "", errorMessage });
+    setValue("lab_result", errorMessage === "" ? rows : []);
+  };
+
+  const libraryRows = labResultForm.filter((row) => row.source === "library");
+  const otherRows = labResultForm.filter((row) => row.source !== "library");
+  const takenSequences = new Set(
+    otherRows.map((row) => row.sequence.toUpperCase()),
+  );
+
+  const previousAssayTypeId = useRef(assayTypeId);
+  useEffect(() => {
+    if (previousAssayTypeId.current !== assayTypeId) {
+      previousAssayTypeId.current = assayTypeId;
+      if (libraryRows.length > 0) commit(otherRows);
+    }
+  }, [assayTypeId]);
 
   useEffect(() => {
     if (file) {
@@ -126,18 +168,20 @@ export default function UploadLabInput({
             },
           );
 
-          const fileData = results.data.map((line) => {
-            return { sequence: line[0].trim(), score: Number(line[1]) };
+          const fileData: LabRow[] = results.data.map((line) => {
+            return {
+              sequence: line[0].trim(),
+              score: Number(line[1]),
+              source: "upload",
+            };
           });
 
-          const validation = checkValidate(fileData);
-          setIsError(validation);
-
-          if (validation.isValidate) {
-            setLabResultForm(fileData);
-            setValue("file_name", file.name);
-            setValue("lab_result", fileData);
-            setValue("file_name", file.name);
+          const message = formatError(fileData);
+          if (message) {
+            setIsError({ isValidate: false, errorMessage: message });
+          } else {
+            const { rows, skipped } = stackRows(labResultForm, fileData);
+            commit(rows, skipped);
           }
         } catch (error) {
           console.error("Error during file parsing or job update:", error);
@@ -148,33 +192,23 @@ export default function UploadLabInput({
     }
   }, [file]);
 
-  const [isConfirmVisible, setConfirmVisible] = useState(false);
-  const ConfirmProps: ConfirmOverlayProps = {
-    id: "confirm-manual-input",
-    onClose: () => setConfirmVisible(false),
-    onConfirm: () => {
-      setConfirmVisible(false);
-      setManualInputVisible(true);
-    },
-    title: "Do you want to discard the current uploaded file?",
-    message:
-      "The current uploaded file will be permanently removed and cannot be recovered.",
-  };
-
   const [isManualInputVisible, setManualInputVisible] = useState(false);
   const ManualInputProps: ManualInputOverlayProps = {
     onClose: () => setManualInputVisible(false),
     onConfirm: (data) => {
-      const validation = checkValidate(data);
-      setIsError(validation);
-      if (validation.isValidate) {
-        setLabResultForm(data);
-        setValue("lab_result", data);
-        setValue("file_name", "manual input");
+      const rows: LabRow[] = data.map((row) => ({ ...row, source: "manual" }));
+      const message = formatError(rows);
+      if (message) {
+        setIsError({ isValidate: false, errorMessage: message });
+      } else {
+        const stacked = stackRows(labResultForm, rows);
+        commit(stacked.rows, stacked.skipped);
       }
       setManualInputVisible(false);
     },
   };
+
+  const [isLibraryVisible, setLibraryVisible] = useState(false);
 
   const [isProteinVisible, setProteinVisible] = useState(false);
   const InputProteinProps: InputProteinOverlayProps = {
@@ -196,10 +230,6 @@ export default function UploadLabInput({
 
   return (
     <div>
-      <ConfirmOverlay
-        confirmProps={ConfirmProps}
-        isVisible={isConfirmVisible}
-      />
       <InputProteinOverlay
         isVisible={isProteinVisible}
         inputProteinProps={InputProteinProps}
@@ -208,6 +238,17 @@ export default function UploadLabInput({
         setProteinVisible={setProteinVisible}
         isVisible={isManualInputVisible}
         manualInputProps={ManualInputProps}
+      />
+      <LibraryPickerModal
+        isVisible={isLibraryVisible}
+        assayTypeId={assayTypeId}
+        takenSequences={takenSequences}
+        selected={libraryRows}
+        onClose={() => setLibraryVisible(false)}
+        onConfirm={(rows) => {
+          commit([...otherRows, ...rows]);
+          setLibraryVisible(false);
+        }}
       />
       <ViewLabResult
         isVisible={isViewVisible}
@@ -286,6 +327,11 @@ export default function UploadLabInput({
                     className="text-pep-gray size-5"
                   />
                   <div>{getValues("file_name")}</div>
+                  {skippedCount > 0 && (
+                    <div className="text-pep-gray">
+                      ({skippedCount} duplicate sequences skipped)
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -321,12 +367,30 @@ export default function UploadLabInput({
                     text="Manual Input"
                     className={`w-fit font-normal inline-flex items-center whitespace-nowrap place-content-center text-center gap-2 !px-2`}
                     disabled={initialStep > step}
-                    onClick={() => setConfirmVisible(true)}
+                    onClick={() => setManualInputVisible(true)}
                   >
                     <Icon
                       icon="material-symbols-light:keyboard-external-input-rounded"
                       className="size-5"
                     />
+                  </Button>
+
+                  {/* -------------------------------------From Library Button----------------------------------------- */}
+                  <Button
+                    id="upload-lab-input-library"
+                    type="button"
+                    buttonType="submit"
+                    text="From Library"
+                    title={
+                      assayTypeId
+                        ? undefined
+                        : "Select an assay score type in Step 1 first"
+                    }
+                    className="w-fit font-normal inline-flex items-center whitespace-nowrap place-content-center text-center gap-2 !px-2"
+                    disabled={initialStep > step || !assayTypeId}
+                    onClick={() => setLibraryVisible(true)}
+                  >
+                    <Icon icon="ph:books" className="size-5" />
                   </Button>
                 </div>
               ) : (
@@ -367,6 +431,9 @@ export default function UploadLabInput({
                     isExample={false}
                     inputProtein={inputProtein}
                     setProteinVisible={setProteinVisible}
+                    onRemove={(index) =>
+                      commit(labResultForm.filter((_, i) => i !== index))
+                    }
                   />
                 </div>
               </div>

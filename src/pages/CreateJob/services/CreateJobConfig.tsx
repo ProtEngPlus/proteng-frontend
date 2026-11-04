@@ -78,7 +78,12 @@ export function generateInitialJobConfig(
     lab_result: jobConfig.lab_result.sequences.map((sequence, index) => ({
       sequence: sequence,
       score: jobConfig.lab_result.scores[index],
+      source:
+        jobConfig.lab_result.sources?.[index] === "manual"
+          ? ("manual" as const)
+          : ("upload" as const),
     })),
+    assay_type_id: jobConfig.assay_type_id,
     run_type: jobConfig.run_type,
     is_notification_on: jobConfig.is_notification_on,
     ref_job_id: jobConfig.ref_job_id,

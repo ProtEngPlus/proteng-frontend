@@ -18,6 +18,14 @@ import { rmse, spearman } from "../../../../commons/utils/assayStats";
 import Pagination from "../../../../commons/components/Pagination/Pagination";
 import PageNumberDropDown from "../MutationResults/Input/PageNumberDropDown";
 import { ProteinSequenceOverlay } from "../Overlay/ProteinSequenceOverlay";
+import AssayTypeSelect from "../../../../commons/components/AssayType/AssayTypeSelect";
+import {
+  exportJobResults,
+  saveCsvDownload,
+} from "../../../../commons/api/assayType";
+import { getJob, updateJobDetail } from "../../../../commons/api/job";
+import { getErrorMessage } from "../../../../commons/api/utils";
+import { JobInterface } from "../../../../commons/interfaces/Job.interface";
 
 type Draft = { actual: string; note: string; measured: string };
 type Status = { text: string; isError: boolean };
@@ -172,6 +180,7 @@ export default function WetLabResults({ jobid }: { jobid: string }) {
         </div>
       ) : (
         <>
+          <ExportBar jobid={jobid} measuredCount={Object.keys(saved).length} />
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <input
@@ -366,6 +375,129 @@ export default function WetLabResults({ jobid }: { jobid: string }) {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function ExportBar({
+  jobid,
+  measuredCount,
+}: {
+  jobid: string;
+  measuredCount: number;
+}) {
+  const [job, setJob] = useState<JobInterface | null>(null);
+  const [pickedTypeId, setPickedTypeId] = useState("");
+  const [message, setMessage] = useState<Status>({ text: "", isError: false });
+
+  const loadJob = () =>
+    getJob(jobid)
+      .then((response) => setJob(response?.data ?? null))
+      .catch(console.error);
+
+  useEffect(() => {
+    loadJob();
+  }, [jobid]);
+
+  if (!job) return null;
+
+  const batchSizes = job.options?.ridgecv?.train_batch_sizes;
+  const minimumSize = Array.isArray(batchSizes) ? Number(batchSizes[0]) : 0;
+
+  const handleSetType = async () => {
+    try {
+      await updateJobDetail(jobid, { assay_type_id: pickedTypeId });
+      await loadJob();
+      setMessage({ text: "", isError: false });
+    } catch (error) {
+      setMessage({ text: getErrorMessage(error), isError: true });
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const download = await exportJobResults(jobid);
+      saveCsvDownload(download);
+      setMessage({
+        text: `Exported ${download.rowCount} rows`,
+        isError: false,
+      });
+    } catch (error) {
+      setMessage({
+        text: "Nothing to export. Save at least one lab score first.",
+        isError: true,
+      });
+      console.error(error);
+    }
+  };
+
+  if (!job.assay_type_id) {
+    return (
+      <div className="rounded-lg bg-pep-blue-light p-4 space-y-3">
+        <div>
+          This job has no assay score type. Set one to export these results and
+          to share them in the Assay Library.
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-[360px]">
+            <AssayTypeSelect
+              id="wet-lab-assay-type"
+              value={pickedTypeId}
+              onChange={setPickedTypeId}
+            />
+          </div>
+          <button
+            type="button"
+            className="px-4 py-2 rounded-lg bg-pep-blue hover:bg-pep-blue-hover text-white disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={!pickedTypeId}
+            onClick={handleSetType}
+          >
+            Set assay type
+          </button>
+          {message.text && (
+            <span className="text-error text-sm">{message.text}</span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const fileName =
+    `${job.name}_${job.assay_type_name ?? ""}`
+      .replace(/[^A-Za-z0-9._-]/g, "_")
+      .slice(0, 100) + ".csv";
+
+  return (
+    <div className="rounded-lg bg-pep-blue-light p-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="space-y-1">
+        <div>
+          File name: <span className="text-pep-blue">{fileName}</span>
+        </div>
+        <div className="text-sm text-pep-dark-gray">
+          {measuredCount} measured rows
+        </div>
+        {measuredCount < minimumSize && (
+          <div className="text-sm text-error">
+            Fewer than the minimum training batch size ({minimumSize}). Upload
+            Lab Input will not accept this file on its own.
+          </div>
+        )}
+        {message.text && (
+          <div
+            className={`text-sm ${message.isError ? "text-error" : "text-pep-green"}`}
+          >
+            {message.text}
+          </div>
+        )}
+      </div>
+      <button
+        type="button"
+        className="px-4 py-2 rounded-lg bg-pep-blue hover:bg-pep-blue-hover text-white disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={measuredCount === 0}
+        onClick={handleExport}
+      >
+        Export CSV
+      </button>
     </div>
   );
 }

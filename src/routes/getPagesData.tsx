@@ -12,6 +12,7 @@ import AccountManagementApp from "../pages/AccountManagement/AccountManagementAp
 import ChangePasswordApp from "../pages/ChangePassword/ChangePasswordApp";
 import CreateJobApp from "../pages/CreateJob/CreateJobApp";
 import JobDetailApp from "../pages/JobDetail/JobDetailApp";
+import AssayLibraryApp from "../pages/AssayLibrary/AssayLibraryApp";
 
 const pagesData = [
   {
@@ -61,6 +62,10 @@ const pagesData = [
   {
     path: "/create-job",
     element: <CreateJobApp />,
+  },
+  {
+    path: "/assay-library",
+    element: <AssayLibraryApp />,
   },
   {
     path: "/dashboard/job-detail/:jobid",

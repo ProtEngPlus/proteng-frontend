@@ -19,7 +19,6 @@ import DateRangePicker, {
   DateRange,
 } from "./components/SearchBar/DateRangePicker";
 import ongoing from "../../assets/images/Dashboard/ongoing.svg";
-import bestAssay from "../../assets/images/Dashboard/bestAssay.svg";
 import Bar from "./components/DashboardContent/Chart/Bar";
 
 const allState: State[] = [
@@ -104,26 +103,6 @@ export default function DashboardPage() {
               }}
             >
               <p>{content.number_of_jobs.ongoing} Jobs</p>
-            </Card>
-            <Card
-              id="best-assay-card"
-              icon={bestAssay}
-              bgColor="bg-[rgba(251,191,36,0.08)]"
-              dropdownText="View Job"
-              labelText="Best Assay Score"
-              onClick={() => {
-                if (content.best_assay_score) {
-                  navigate(
-                    `/dashboard/job-detail/${content.best_assay_score.id}`,
-                  );
-                }
-              }}
-            >
-              <p>
-                {content.best_assay_score
-                  ? content.best_assay_score.assay_score
-                  : "-"}
-              </p>
             </Card>
             <Card
               id="recent-job-card"
