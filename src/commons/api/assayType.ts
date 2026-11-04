@@ -1,6 +1,5 @@
-import axios from "axios";
+import { apiClient } from "./client";
 import { del, get, post, put } from "./common";
-import { getHeaderWithToken } from "./utils";
 import { BACKEND_BASE_URL } from "../configs/apiConfig";
 import {
   AssayType,
@@ -16,7 +15,7 @@ const JOB_EXPORT_PATH =
   BACKEND_BASE_URL + "/proteng-conductor/mutations/experimental-results/export";
 
 export const getAllAssayTypes = async (): Promise<AssayTypeSummary[]> => {
-  const response = await get<AssayTypeSummary[]>(ASSAY_TYPE_PATH, true);
+  const response = await get<AssayTypeSummary[]>(ASSAY_TYPE_PATH);
   return response.data ?? [];
 };
 
@@ -24,7 +23,6 @@ export const createAssayType = async (input: AssayTypeInput) => {
   const response = await post<AssayTypeInput | AssayType>(
     ASSAY_TYPE_PATH,
     input,
-    true,
   );
   return response.data as AssayType;
 };
@@ -33,13 +31,12 @@ export const updateAssayType = async (id: string, input: AssayTypeInput) => {
   const response = await put<AssayTypeInput | AssayType>(
     ASSAY_TYPE_PATH + `/${id}`,
     input,
-    true,
   );
   return response.data as AssayType;
 };
 
 export const deleteAssayType = async (id: string) => {
-  return await del(ASSAY_TYPE_PATH + `/${id}`, true);
+  return await del(ASSAY_TYPE_PATH + `/${id}`);
 };
 
 export const getLibraryJobs = async (
@@ -48,7 +45,6 @@ export const getLibraryJobs = async (
 ): Promise<LibraryJobList> => {
   const response = await get<LibraryJobList>(
     ASSAY_TYPE_PATH + `/${id}/library/jobs`,
-    true,
     q ? { q } : undefined,
   );
   return response.data ?? { jobs: [], duplicates_collapsed: 0 };
@@ -60,7 +56,6 @@ export const getLibraryResults = async (
 ): Promise<LibraryResult[]> => {
   const response = await get<LibraryResult[]>(
     ASSAY_TYPE_PATH + `/${id}/library`,
-    true,
     { job_id: jobId },
   );
   return response.data ?? [];
@@ -70,8 +65,7 @@ const downloadCsv = async (
   path: string,
   params: Record<string, string>,
 ): Promise<CsvDownload> => {
-  const response = await axios.get(path, {
-    headers: getHeaderWithToken(),
+  const response = await apiClient.get(path, {
     params,
     responseType: "blob",
   });
