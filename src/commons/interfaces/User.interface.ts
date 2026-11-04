@@ -20,10 +20,6 @@ export interface User {
   user_role?: UserRole;
 }
 
-export interface UserLogin extends User {
-  access_token: string;
-}
-
 export interface UserRegister {
   email: string;
   password: string;

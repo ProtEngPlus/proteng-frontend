@@ -91,7 +91,7 @@ export default function DashboardPage() {
               content.number_of_jobs.failed,
             ]}
           />
-          <div className="grid grid-flow-row gap-5 min-w-conte w-full">
+          <div className="grid grid-flow-row content-start gap-5 min-w-conte w-full">
             <Card
               id="on-going-card"
               icon={ongoing}

@@ -9,17 +9,17 @@ const USER_PATH = BACKEND_BASE_URL + "/proteng-user-mgmt/users";
 
 export const getMe = async () => {
   const path = ME_PATH;
-  return await get<User>(path, true);
+  return await get<User>(path);
 };
 
 export const updateMe = async (user: Partial<UserRegister>) => {
   const path = ME_PATH;
-  return await put<UserRegister>(path, user, true);
+  return await put<UserRegister>(path, user);
 };
 
 export const deleteMe = async () => {
   const path = ME_PATH;
-  return await del(path, true);
+  return await del(path);
 };
 
 /*------------------------*/
@@ -28,17 +28,17 @@ export const deleteMe = async () => {
 
 export const getAllUsers = async () => {
   const path = USER_PATH;
-  return await get<User[]>(path, true);
+  return await get<User[]>(path);
 };
 
 export const getUser = async (id: string) => {
   const path = USER_PATH + `/${id}`;
-  return await get<User>(path, true);
+  return await get<User>(path);
 };
 
 export const updateUser = async (id: string, user: Partial<UserRegister>) => {
   const path = USER_PATH + `/${id}`;
-  return await put<UserRegister>(path, user, true);
+  return await put<UserRegister>(path, user);
 };
 
 export const deleteUser = async (id: string) => {
