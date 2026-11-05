@@ -338,7 +338,9 @@ export default function EvaluationResults({
                     (title, index) => (
                       <th
                         key={index}
-                        className="font-normal px-3 py-3 text-base"
+                        className={`font-normal py-3 text-base ${
+                          index === 0 ? "px-6" : "px-3"
+                        }`}
                       >
                         {title}
                       </th>
@@ -349,7 +351,7 @@ export default function EvaluationResults({
               <tbody className="font-light leading-7">
                 {pageRows.map(({ mutation_result: mutant, results }) => (
                   <tr key={mutant.id} className="bg-white border-b h-[60px]">
-                    <td className="px-3 py-3 truncate max-w-[220px]">
+                    <td className="px-6 py-3 truncate max-w-[220px]">
                       {mutant.mutation_positions.join(", ")}
                     </td>
                     <td className="px-3 py-3 text-pep-blue whitespace-nowrap">
