@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import EvaluationPluginSelector from "../../../../commons/components/EvaluationPluginSelector/EvaluationPluginSelector";
-import EvaluationDropdown from "../../../../commons/components/EvaluationPluginSelector/EvaluationDropdown";
+import { FormProvider, useForm } from "react-hook-form";
+import SelectInput from "../../../../commons/components/Input/SelectInput";
 import Button from "../../../../commons/components/Button/Button";
 import {
   getEvaluationPlugins,
@@ -33,6 +34,20 @@ export function RerunEvaluationOverlay({
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const collectionForm = useForm<{ rerun_mutation: string }>();
+  const { setValue: setCollectionValue, watch: watchCollection } =
+    collectionForm;
+
+  useEffect(() => {
+    const subscription = watchCollection((values, { name }) => {
+      if (name === "rerun_mutation") setMutationId(values.rerun_mutation ?? "");
+    });
+    return () => subscription.unsubscribe();
+  }, [watchCollection]);
+
+  useEffect(() => {
+    setCollectionValue("rerun_mutation", mutationId);
+  }, [mutationId, setCollectionValue]);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -111,24 +126,21 @@ export function RerunEvaluationOverlay({
 
             <div className="bg-white rounded-lg p-8 font-light text-start space-y-6">
               <div className="grid grid-cols-[1fr,2fr] gap-x-3 items-center">
-                <label id="rerun-mutation-label" htmlFor="rerun-mutation">
-                  Mutation collection:
-                </label>
-                <EvaluationDropdown
-                  id="rerun-mutation"
-                  labelId="rerun-mutation-label"
-                  options={[
-                    { label: "Latest completed collection", value: "" },
-                    ...mutations.map((mutation) => ({
-                      label: mutation.name,
-                      value: mutation.id,
-                    })),
-                  ]}
-                  value={mutationId}
-                  className="!w-full"
-                  disabled={isLoading || isSubmitting}
-                  onSelect={setMutationId}
-                />
+                <label htmlFor="rerun_mutation">Mutation collection:</label>
+                <FormProvider {...collectionForm}>
+                  <SelectInput
+                    id="rerun_mutation"
+                    defaultValue={mutationId}
+                    options={[
+                      { label: "Latest completed collection", value: "" },
+                      ...mutations.map((mutation) => ({
+                        label: mutation.name,
+                        value: mutation.id,
+                      })),
+                    ]}
+                    disabled={isLoading || isSubmitting}
+                  />
+                </FormProvider>
               </div>
               <EvaluationPluginSelector
                 key={`${jobid}-${isVisible}`}

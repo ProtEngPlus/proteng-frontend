@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import clsx from "clsx";
 import {
@@ -18,6 +19,7 @@ import PageNumberDropDown from "../MutationResults/Input/PageNumberDropDown";
 import { ProteinSequenceOverlay } from "../Overlay/ProteinSequenceOverlay";
 import { formatDate } from "../../service/formatDate";
 import Button from "../../../../commons/components/Button/Button";
+import SelectInput from "../../../../commons/components/Input/SelectInput";
 import { State } from "../../../../commons/interfaces/Job.interface";
 import { RerunEvaluationOverlay } from "../Overlay/RerunEvaluationOverlay";
 import { getErrorMessage } from "../../../../commons/api/utils";
@@ -118,6 +120,21 @@ export default function EvaluationResults({
   const [runsVersion, setRunsVersion] = useState(0);
   const [isRerunVisible, setIsRerunVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const runForm = useForm<{ evaluation_run: string }>();
+  const { setValue: setRunValue, watch: watchRun } = runForm;
+
+  useEffect(() => {
+    const subscription = watchRun((values, { name }) => {
+      if (name !== "evaluation_run" || !values.evaluation_run) return;
+      setSelectedRunId(values.evaluation_run);
+      setCurrentPage(1);
+    });
+    return () => subscription.unsubscribe();
+  }, [watchRun]);
+
+  useEffect(() => {
+    if (selectedRunId) setRunValue("evaluation_run", selectedRunId);
+  }, [selectedRunId, setRunValue]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -226,25 +243,21 @@ export default function EvaluationResults({
           </button>
           {runs.length > 0 && (
             <div className="flex items-center gap-3">
-              <label htmlFor="evaluation-run" className="text-pep-dark-gray">
+              <label htmlFor="evaluation_run" className="text-pep-dark-gray">
                 Evaluation run
               </label>
-              <select
-                id="evaluation-run"
-                className="rounded-lg border border-pep-gray-border px-3 py-1.5 text-sm font-light focus:border-pep-blue focus:ring-pep-blue"
-                value={selectedRunId}
-                onChange={(e) => {
-                  setSelectedRunId(e.target.value);
-                  setCurrentPage(1);
-                }}
-              >
-                {runs.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {formatDate(item.created_at)} · {item.plugins.join(", ")}
-                    {item.rerun ? " · rerun" : ""}
-                  </option>
-                ))}
-              </select>
+              <FormProvider {...runForm}>
+                <div className="w-[360px] text-base">
+                  <SelectInput
+                    id="evaluation_run"
+                    defaultValue={selectedRunId}
+                    options={runs.map((item) => ({
+                      label: `${formatDate(item.created_at)} · ${item.plugins.join(", ")}${item.rerun ? " · rerun" : ""}`,
+                      value: item.id,
+                    }))}
+                  />
+                </div>
+              </FormProvider>
             </div>
           )}
           <Button
