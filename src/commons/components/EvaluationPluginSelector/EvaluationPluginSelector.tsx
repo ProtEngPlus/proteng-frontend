@@ -58,11 +58,11 @@ export default function EvaluationPluginSelector({
 
   return (
     <div className="space-y-6">
-      <div className={variant === "form" ? "w-[40%] min-w-fit" : ""}>
+      <div className={variant === "form" ? "w-[40%]" : ""}>
         <div
           className={
             variant === "form"
-              ? "min-w-fit justify-between items-start space-x-3 grid grid-cols-[1fr,4fr] max-w-[1000px]"
+              ? "justify-between items-start space-x-3 grid grid-cols-[minmax(0,1fr),minmax(0,4fr)] max-w-[1000px]"
               : "grid grid-cols-[1fr,2fr] gap-x-3 items-start"
           }
         >
@@ -75,7 +75,13 @@ export default function EvaluationPluginSelector({
           </label>
           <div className="space-y-3">
             {!readOnly && (
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <div
+                className={`flex items-center gap-x-5 gap-y-2 ${
+                  variant === "form"
+                    ? "flex-nowrap whitespace-nowrap"
+                    : "flex-wrap"
+                }`}
+              >
                 <EvaluationDropdown
                   id={id}
                   labelId={labelId}
