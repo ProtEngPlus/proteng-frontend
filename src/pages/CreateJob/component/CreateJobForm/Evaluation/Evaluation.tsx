@@ -27,6 +27,7 @@ export default function Evaluation({
   const [errorMessage, setErrorMessage] = useState("");
   const [reload, setReload] = useState(0);
   const [isEdit, setIsEdit] = useState(onEdit);
+  const [activePlugin, setActivePlugin] = useState("");
 
   useEffect(() => {
     let isCancelled = false;
@@ -72,7 +73,7 @@ export default function Evaluation({
   return (
     <ContextWithHelperText
       title="Evaluation"
-      helperText={<EvaluationHelperText plugins={plugins} />}
+      helperText={<EvaluationHelperText plugin={activePlugin} />}
       isConclusion={isConclusion}
       onEdit={isEdit}
       onEditChange={() => setIsEdit(!isEdit)}
@@ -85,6 +86,7 @@ export default function Evaluation({
         hasRegistryError={!!errorMessage}
         readOnly={!isEdit}
         emptyText="No plugins selected. Evaluation will be skipped."
+        onActiveChange={setActivePlugin}
         onChange={(next) =>
           setValue("evaluation_plugins", next, {
             shouldDirty: true,

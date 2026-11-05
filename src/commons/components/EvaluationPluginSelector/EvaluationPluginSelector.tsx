@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EvaluationDropdown from "./EvaluationDropdown";
 import { evaluationPluginInfo } from "../../configs/evaluationPluginConfig";
 
@@ -13,6 +13,7 @@ interface Props {
   readOnly?: boolean;
   variant?: "form" | "dialog";
   emptyText?: string;
+  onActiveChange?: (plugin: string) => void;
 }
 
 export default function EvaluationPluginSelector({
@@ -26,6 +27,7 @@ export default function EvaluationPluginSelector({
   readOnly = false,
   variant = "form",
   emptyText = "No plugins selected",
+  onActiveChange,
 }: Props) {
   const [activePlugin, setActivePlugin] = useState("");
   const active = selected.includes(activePlugin)
@@ -37,6 +39,10 @@ export default function EvaluationPluginSelector({
   const canClear = !disabled && !isLoading && selected.length > 0;
   const labelId = `${id}-label`;
   const activeInfo = active ? evaluationPluginInfo[active] : undefined;
+
+  useEffect(() => {
+    onActiveChange?.(active);
+  }, [active, onActiveChange]);
 
   const addPlugin = (plugin: string) => {
     if (!canAdd || !available.includes(plugin)) return;

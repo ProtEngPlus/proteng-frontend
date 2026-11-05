@@ -1,10 +1,7 @@
 import { evaluationPluginInfo } from "../../../../../commons/configs/evaluationPluginConfig";
 
-export default function EvaluationHelperText({
-  plugins,
-}: {
-  plugins: string[];
-}) {
+export default function EvaluationHelperText({ plugin }: { plugin: string }) {
+  const info = plugin ? evaluationPluginInfo[plugin] : undefined;
   return (
     <div className="mt-4 space-y-4 text-pep-dark-gray">
       <div className="grid grid-cols-[1fr,4fr] space-x-3 text-start">
@@ -15,33 +12,34 @@ export default function EvaluationHelperText({
           to skip evaluation.
         </span>
       </div>
-      {plugins.map((plugin) => {
-        const info = evaluationPluginInfo[plugin];
-        return (
-          <div key={plugin} className="space-y-4">
-            <div className="space-y-2">
-              <h1 className="text-2xl font-normal">{plugin}</h1>
-              <span className="text-sm font-light">
-                {info?.description ??
-                  "No description is available for this plugin."}
+      {plugin ? (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-normal">{plugin}</h1>
+            <span className="text-sm font-light">
+              {info?.description ??
+                "No description is available for this plugin."}
+            </span>
+          </div>
+          <hr />
+          {info?.outputs.map((output) => (
+            <div
+              key={output.name}
+              className="grid grid-cols-[1fr,4fr] space-x-3 text-start"
+            >
+              <span className="text-nowrap">Output:</span>
+              <span>
+                <span className="font-semibold">{output.name}</span>:{" "}
+                {output.description}
               </span>
             </div>
-            <hr />
-            {info?.outputs.map((output) => (
-              <div
-                key={output.name}
-                className="grid grid-cols-[1fr,4fr] space-x-3 text-start"
-              >
-                <span className="text-nowrap">Output:</span>
-                <span>
-                  <span className="font-semibold">{output.name}</span>:{" "}
-                  {output.description}
-                </span>
-              </div>
-            ))}
-          </div>
-        );
-      })}
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm font-light">
+          Select a plugin to see its details here.
+        </p>
+      )}
       <div className="grid grid-cols-[1fr,4fr] space-x-3 text-start">
         <span className="text-nowrap">Failures:</span>
         <span>
