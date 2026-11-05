@@ -125,7 +125,7 @@ export default function EvaluationPluginSelector({
             <div
               role="group"
               aria-label="Selected plugins"
-              className="flex flex-wrap items-center gap-2 min-w-[336px] max-w-full min-h-[3.75rem] rounded-md border border-dashed border-pep-gray-border bg-white p-2"
+              className="flex flex-wrap items-center gap-2 min-w-[336px] max-w-full min-h-16 rounded-md border-2 border-dashed border-pep-gray bg-white p-2"
             >
               {selected.length === 0 ? (
                 <span className="px-2 text-sm text-pep-dark-gray">
