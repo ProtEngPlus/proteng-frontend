@@ -31,12 +31,19 @@ export default function EvaluationPluginSelector({
   const available = plugins.filter((plugin) => !selected.includes(plugin));
   const registryReady = !isLoading && !hasRegistryError;
   const canAdd = !disabled && registryReady && available.length > 0;
+  const canClear = !disabled && !isLoading && selected.length > 0;
   const labelId = `${id}-label`;
 
   const addPlugin = (plugin: string) => {
     if (!canAdd || !available.includes(plugin)) return;
     onChange([...selected, plugin]);
     setActivePlugin(plugin);
+  };
+
+  const addAll = () => {
+    if (!canAdd) return;
+    onChange([...selected, ...available]);
+    if (!active) setActivePlugin(available[0]);
   };
 
   return (
@@ -72,6 +79,24 @@ export default function EvaluationPluginSelector({
                   disabled={!canAdd}
                   onSelect={addPlugin}
                 />
+                <div className="flex items-center gap-x-4 text-sm">
+                  <button
+                    type="button"
+                    className="text-pep-blue underline disabled:text-label disabled:no-underline disabled:cursor-not-allowed"
+                    disabled={!canAdd}
+                    onClick={addAll}
+                  >
+                    Add all
+                  </button>
+                  <button
+                    type="button"
+                    className="text-pep-blue underline disabled:text-label disabled:no-underline disabled:cursor-not-allowed"
+                    disabled={!canClear}
+                    onClick={() => onChange([])}
+                  >
+                    Clear all
+                  </button>
+                </div>
               </div>
             )}
             {!readOnly && registryReady && plugins.length === 0 && (
