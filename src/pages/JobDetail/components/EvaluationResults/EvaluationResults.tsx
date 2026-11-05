@@ -234,13 +234,6 @@ export default function EvaluationResults({
       <div className="flex justify-between items-center border-l-4 border-pep-orange pl-6 text-xl gap-x-5">
         <div>Evaluation</div>
         <div className="flex items-center gap-5 text-sm">
-          <button
-            type="button"
-            className="text-pep-blue underline"
-            onClick={() => setRunsVersion((version) => version + 1)}
-          >
-            Refresh
-          </button>
           {runs.length > 0 && (
             <div className="flex items-center gap-3">
               <label htmlFor="evaluation_run" className="text-pep-dark-gray">
