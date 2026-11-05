@@ -1,5 +1,6 @@
 import { useState } from "react";
 import EvaluationDropdown from "./EvaluationDropdown";
+import { evaluationPluginInfo } from "../../configs/evaluationPluginConfig";
 
 interface Props {
   id: string;
@@ -33,6 +34,7 @@ export default function EvaluationPluginSelector({
   const canAdd = !disabled && registryReady && available.length > 0;
   const canClear = !disabled && !isLoading && selected.length > 0;
   const labelId = `${id}-label`;
+  const activeInfo = active ? evaluationPluginInfo[active] : undefined;
 
   const addPlugin = (plugin: string) => {
     if (!canAdd || !available.includes(plugin)) return;
@@ -190,16 +192,20 @@ export default function EvaluationPluginSelector({
             <p className="text-sm font-light text-error">
               This plugin is unavailable. Remove it before continuing.
             </p>
-          ) : active === "mock" ? (
+          ) : activeInfo ? (
             <>
-              <p className="text-sm font-light">
-                Test plugin that returns generated scores to check the
-                evaluation workflow. These scores are not biological
-                predictions.
-              </p>
-              <p className="text-sm font-light">
-                Output: <span className="font-semibold">mock_score</span>
-              </p>
+              <p className="text-sm font-light">{activeInfo.description}</p>
+              {activeInfo.outputs.length > 0 && (
+                <p className="text-sm font-light">
+                  Output:{" "}
+                  {activeInfo.outputs.map((output, index) => (
+                    <span key={output.name}>
+                      {index > 0 && ", "}
+                      <span className="font-semibold">{output.name}</span>
+                    </span>
+                  ))}
+                </p>
+              )}
             </>
           ) : (
             <p className="text-sm font-light">

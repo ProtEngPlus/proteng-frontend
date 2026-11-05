@@ -3,7 +3,8 @@ import { useFormContext } from "react-hook-form";
 import { getEvaluationPlugins } from "../../../../../commons/api/evaluation";
 import { getErrorMessage } from "../../../../../commons/api/utils";
 import EvaluationPluginSelector from "../../../../../commons/components/EvaluationPluginSelector/EvaluationPluginSelector";
-import Context from "../../../../../commons/components/CreateJob/Context/Context";
+import ContextWithHelperText from "../../../../../commons/components/CreateJob/Context/ContextWithHelper";
+import EvaluationHelperText from "./EvaluationHelperText";
 
 export default function Evaluation({
   isConclusion = false,
@@ -69,16 +70,13 @@ export default function Evaluation({
   }, [register, clearErrors, trigger, plugins, isLoading, errorMessage]);
 
   return (
-    <Context
+    <ContextWithHelperText
       title="Evaluation"
+      helperText={<EvaluationHelperText plugins={plugins} />}
       isConclusion={isConclusion}
-      onEdit={onEdit}
-      onEditChange={setIsEdit}
+      onEdit={isEdit}
+      onEditChange={() => setIsEdit(!isEdit)}
     >
-      <p className="text-sm text-pep-dark-gray">
-        Selected plugins evaluate the generated mutants after mutation. Leave
-        the selection empty to skip evaluation.
-      </p>
       <EvaluationPluginSelector
         id="create-evaluation-plugins"
         plugins={plugins}
@@ -110,6 +108,6 @@ export default function Evaluation({
           {String(errors.evaluation_plugins.message)}
         </div>
       )}
-    </Context>
+    </ContextWithHelperText>
   );
 }
