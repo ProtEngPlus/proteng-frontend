@@ -55,7 +55,6 @@ export function RerunEvaluationOverlay({
         }
         const list: string[] = pluginResponse?.data ?? [];
         setPlugins(list);
-        setSelectedPlugins(list);
         setMutations(
           ((mutationResponse?.data ?? []) as MutationInterface[])
             .filter((mutation) => mutation.state === "COMPLETED")
