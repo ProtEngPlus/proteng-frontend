@@ -17,6 +17,7 @@ export type LabResult = {
   total: number;
   sequences: string[];
   scores: number[];
+  sources?: ("upload" | "manual" | "library")[];
 };
 
 export type OptionValue =
@@ -31,6 +32,9 @@ export interface JobInterface {
   stage_id: number;
   state: State;
   ref_job_id?: string;
+  assay_type_id?: string;
+  assay_type_name?: string;
+  library_result_ids?: string[];
   name: string;
   description: string;
   input_protein: string;

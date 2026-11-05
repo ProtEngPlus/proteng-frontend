@@ -3,10 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import Papa, { ParseResult } from "papaparse";
 import { useFormContext } from "react-hook-form";
 import {
-  ConfirmOverlay,
-  ConfirmOverlayProps,
-} from "../../../../commons/components/ModalOverlay/ConfirmOverlay";
-import {
   ManualInput,
   ManualInputOverlayProps,
 } from "../../../../commons/components/CreateJob/UploadLabInput/ManualInputOverlay";
@@ -19,7 +15,9 @@ import { UploadInputTemplate } from "../../../CreateJob/services/UploadInputTemp
 import { LabInputTable } from "../../../../commons/components/CreateJob/UploadLabInput/LabInputTable";
 import Button from "../../../../commons/components/Button/Button";
 import { LabResult } from "../../../../commons/interfaces/Job.interface";
+import { LabRow } from "../../../../commons/interfaces/AssayType.interface";
 import { updateJobDetail } from "../../../../commons/api/job";
+import { stackRows } from "../../../../commons/utils/stackRows";
 
 export const exampleLabResult = [
   { sequence: "ASIQHFHW", score: 0.002914 },
@@ -27,6 +25,23 @@ export const exampleLabResult = [
   { sequence: "DSIQHFHW", score: 0.002219 },
   { sequence: "ESIQHFHW", score: 0.004379 },
 ];
+
+const toLabResult = (rows: LabRow[]): LabResult =>
+  rows.reduce(
+    (acc, item) => {
+      acc.sequences.push(item.sequence);
+      acc.scores.push(item.score);
+      acc.sources?.push(item.source ?? "upload");
+      acc.total++;
+      return acc;
+    },
+    {
+      total: 0,
+      sequences: [] as string[],
+      scores: [] as number[],
+      sources: [] as ("upload" | "manual" | "library")[],
+    },
+  );
 
 export default function UploadLabInput({
   id,
@@ -39,22 +54,35 @@ export default function UploadLabInput({
   const minimumSize = getValues(`options.ridgecv.train_batch_sizes`)?.[0];
   const labData: LabResult = getValues("lab_result");
   const inputProtein = getValues("input_protein");
-  const labResult = labData?.sequences?.map((sequence, index) => ({
-    sequence,
-    score: labData.scores?.[index],
-  }));
+  const labResult: LabRow[] | undefined = labData?.sequences?.map(
+    (sequence, index) => ({
+      sequence,
+      score: labData.scores?.[index],
+      source: labData.sources?.[index],
+    }),
+  );
 
   const [isExpand, setIsExpand] = useState(false);
   const [isRead, setRead] = useState(false);
-  const [labResultForm, setLabResultForm] = useState<
-    { sequence: string; score: number }[]
-  >(labResult ?? []);
+  const [labResultForm, setLabResultForm] = useState<LabRow[]>(labResult ?? []);
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isError, setIsError] = useState({
     isValidate: true,
     errorMessage: "",
   });
+  const [skippedCount, setSkippedCount] = useState(0);
+
+  const saveRows = async (rows: LabRow[], skipped: number) => {
+    await updateJobDetail(id, {
+      lab_result: toLabResult(rows),
+      library_result_ids: getValues("library_result_ids") ?? [],
+    });
+    setLabResultForm(rows);
+    setSkippedCount(skipped);
+  };
+
+  const tooFewMessage = `Total sequences should match minimum training batch size !\nMinimum training batch size can be modify in Step-4 “Top Model”`;
 
   const handleButtonClick = () => {
     if (fileInputRef.current) {
@@ -73,13 +101,6 @@ export default function UploadLabInput({
   const checkValidate = (data: { sequence: string; score: number }[]) => {
     // Regular expression for valid amino acid sequences
     const validSequenceRegex = /^(?!.*[BJOUXZ])[A-Z]+$/i;
-
-    if (data.length < minimumSize) {
-      return {
-        isValidate: false,
-        errorMessage: `Total sequences should match minimum training batch size !\nMinimum training batch size can be modify in Step-4 “Top Model”`,
-      };
-    }
 
     for (const { sequence, score } of data) {
       if (
@@ -117,25 +138,23 @@ export default function UploadLabInput({
             },
           );
 
-          const fileData = results.data.map((line) => {
-            return { sequence: line[0].trim(), score: Number(line[1]) };
+          const fileData: LabRow[] = results.data.map((line) => {
+            return {
+              sequence: line[0].trim(),
+              score: Number(line[1]),
+              source: "upload",
+            };
           });
 
           const validation = checkValidate(fileData);
-          setIsError(validation);
-
-          if (validation.isValidate) {
-            const data: LabResult = fileData.reduce(
-              (acc, item) => {
-                acc.sequences.push(item.sequence);
-                acc.scores.push(item.score);
-                acc.total++;
-                return acc;
-              },
-              { total: 0, sequences: [] as string[], scores: [] as number[] },
-            );
-            await updateJobDetail(id, { lab_result: data });
-            setLabResultForm(fileData);
+          const stacked = stackRows(labResultForm, fileData);
+          if (validation.isValidate && stacked.rows.length < minimumSize) {
+            setIsError({ isValidate: false, errorMessage: tooFewMessage });
+          } else {
+            setIsError(validation);
+            if (validation.isValidate) {
+              await saveRows(stacked.rows, stacked.skipped);
+            }
           }
         } catch (error) {
           console.error("Error during file parsing or job update:", error);
@@ -146,37 +165,20 @@ export default function UploadLabInput({
     }
   }, [file]);
 
-  const [isConfirmVisible, setConfirmVisible] = useState(false);
-  const ConfirmProps: ConfirmOverlayProps = {
-    id: "confirm-manual-input",
-    onClose: () => setConfirmVisible(false),
-    onConfirm: () => {
-      setConfirmVisible(false);
-      setManualInputVisible(true);
-    },
-    title: "Do you want to discard the current uploaded file?",
-    message:
-      "The current uploaded file will be permanently removed and cannot be recovered.",
-  };
-
   const [isManualInputVisible, setManualInputVisible] = useState(false);
   const ManualInputProps: ManualInputOverlayProps = {
     onClose: () => setManualInputVisible(false),
     onConfirm: async (data) => {
-      const validation = checkValidate(data);
-      setIsError(validation);
-      if (validation.isValidate) {
-        const labResultData: LabResult = data.reduce(
-          (acc, item) => {
-            acc.sequences.push(item.sequence);
-            acc.scores.push(item.score);
-            acc.total++;
-            return acc;
-          },
-          { total: 0, sequences: [] as string[], scores: [] as number[] },
-        );
-        await updateJobDetail(id, { lab_result: labResultData });
-        setLabResultForm(data);
+      const rows: LabRow[] = data.map((row) => ({ ...row, source: "manual" }));
+      const validation = checkValidate(rows);
+      const stacked = stackRows(labResultForm, rows);
+      if (validation.isValidate && stacked.rows.length < minimumSize) {
+        setIsError({ isValidate: false, errorMessage: tooFewMessage });
+      } else {
+        setIsError(validation);
+        if (validation.isValidate) {
+          await saveRows(stacked.rows, stacked.skipped);
+        }
       }
       setManualInputVisible(false);
     },
@@ -192,10 +194,6 @@ export default function UploadLabInput({
 
   return (
     <div>
-      <ConfirmOverlay
-        confirmProps={ConfirmProps}
-        isVisible={isConfirmVisible}
-      />
       <InputProteinOverlay
         isVisible={isProteinVisible}
         inputProteinProps={InputProteinProps}
@@ -299,7 +297,7 @@ export default function UploadLabInput({
                   text="Manual Input"
                   className={`w-fit font-normal inline-flex items-center whitespace-nowrap place-content-center text-center gap-2 !px-2`}
                   disabled={disable}
-                  onClick={() => setConfirmVisible(true)}
+                  onClick={() => setManualInputVisible(true)}
                 >
                   <Icon
                     icon="material-symbols-light:keyboard-external-input-rounded"
@@ -319,6 +317,11 @@ export default function UploadLabInput({
                   <span className="font-light text-pep-blue">
                     {labResultForm.length} sequences
                   </span>
+                  {skippedCount > 0 && (
+                    <span className="text-pep-gray">
+                      ({skippedCount} duplicate sequences skipped)
+                    </span>
+                  )}
                 </div>
                 <div>
                   <LabInputTable

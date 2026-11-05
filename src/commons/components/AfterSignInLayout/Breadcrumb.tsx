@@ -5,6 +5,7 @@ import { getJob } from "../../api/job";
 
 const nameMapping: { [key: string]: string } = {
   dashboard: "Dashboard",
+  "assay-library": "Assay Library",
   "create-job": "Create Job",
   "account-management": "Account Management",
   "job-detail": "Job Detail",

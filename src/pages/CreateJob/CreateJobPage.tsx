@@ -42,6 +42,7 @@ import {
 import { createJob } from "../../commons/api/job";
 import { QueryResult } from "../../commons/interfaces/QueryResult.interface";
 import { getAllQueryResults } from "../../commons/api/queryResult";
+import { LabSource } from "../../commons/interfaces/AssayType.interface";
 
 export default function CreateJobPage() {
   const navigate = useNavigate();
@@ -84,6 +85,7 @@ export default function CreateJobPage() {
     mode: "onChange",
     defaultValues: {
       file_name: "",
+      assay_type_id: "",
       input_protein_field: jobDetail.input_protein,
       initial_input_protein: jobDetail.input_protein,
       ...jobDetail,
@@ -116,6 +118,7 @@ export default function CreateJobPage() {
         ...data.initialJobOption,
         input_protein_field: data.initialJobDetail.input_protein,
         initial_input_protein: data.initialJobDetail.input_protein,
+        assay_type_id: job.assay_type_id ?? "",
         file_name: job.lab_result.total > 0 ? "recent_lab_result" : "",
       });
 
@@ -154,6 +157,7 @@ export default function CreateJobPage() {
           try {
             // Update jobDetail
             const newJobDetail: CreateJobDetail = {
+              assay_type_id: data["assay_type_id"],
               artifact: data["artifact"],
               ref_job_id: data["ref_job_id"],
               description: data["description"],
@@ -219,14 +223,24 @@ export default function CreateJobPage() {
       setIsConfirmVisible(false);
       const { detail, option, meta } = await updateInfo();
       const { lab_result, ...otherDetails } = detail;
+      const libraryResultIds: string[] = [];
       const labResult = lab_result.reduce(
         (acc, item) => {
           acc.sequences.push(item.sequence);
           acc.scores.push(item.score);
+          acc.sources.push(item.source ?? "upload");
+          if (item.library_result_id) {
+            libraryResultIds.push(item.library_result_id);
+          }
           acc.total++;
           return acc;
         },
-        { total: 0, sequences: [] as string[], scores: [] as number[] },
+        {
+          total: 0,
+          sequences: [] as string[],
+          scores: [] as number[],
+          sources: [] as LabSource[],
+        },
       );
 
       const newJob: CreateJobInterface = {
@@ -235,6 +249,8 @@ export default function CreateJobPage() {
         options: option,
         lab_result: labResult,
         ...otherDetails,
+        assay_type_id: otherDetails.assay_type_id ?? "",
+        library_result_ids: libraryResultIds,
         meta: meta,
         query_result: initialStep > 1 && queryResult ? queryResult : undefined,
       };

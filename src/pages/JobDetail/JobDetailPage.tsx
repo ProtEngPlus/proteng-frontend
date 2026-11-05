@@ -119,7 +119,8 @@ export default function JobDetailPage() {
         defaultTabId: "pipeline-tab",
         activeClasses:
           "text-pep-orange hover:text-pep-orange border-pep-orange",
-        inactiveClasses: "text-label border-white hover:border-pep-gray-border",
+        inactiveClasses:
+          "text-label border-transparent hover:border-pep-gray-border",
       };
 
       const tabs: TabsInterface = new Tabs(tabsElement, tabElements, options);
