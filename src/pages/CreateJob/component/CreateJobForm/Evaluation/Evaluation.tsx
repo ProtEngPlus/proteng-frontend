@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Icon } from "@iconify/react";
 import { useFormContext } from "react-hook-form";
 import { getEvaluationPlugins } from "../../../../../commons/api/evaluation";
 import { getErrorMessage } from "../../../../../commons/api/utils";
@@ -95,15 +96,17 @@ export default function Evaluation({
         }
       />
       {errorMessage && (
-        <div role="alert" className="text-error text-sm space-x-3">
+        <div
+          role="alert"
+          className="flex items-center gap-3 text-error text-sm"
+        >
           <span>{errorMessage}</span>
-          <button
-            type="button"
-            className="underline text-pep-blue"
+          <Icon
+            icon="ic:round-refresh"
+            className="size-7 text-pep-gray cursor-pointer"
+            aria-label="Retry"
             onClick={() => setReload((count) => count + 1)}
-          >
-            Retry
-          </button>
+          />
         </div>
       )}
       {errors.evaluation_plugins?.message && (
