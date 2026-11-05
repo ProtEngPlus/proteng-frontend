@@ -134,6 +134,7 @@ export function RerunEvaluationOverlay({
                 key={`${jobid}-${isVisible}`}
                 id="rerun-evaluation-plugins"
                 variant="dialog"
+                emptyText="Select at least one plugin to run."
                 plugins={plugins}
                 selected={selectedPlugins}
                 onChange={setSelectedPlugins}

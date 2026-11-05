@@ -84,6 +84,7 @@ export default function Evaluation({
         isLoading={isLoading}
         hasRegistryError={!!errorMessage}
         readOnly={!isEdit}
+        emptyText="No plugins selected. Evaluation will be skipped."
         onChange={(next) =>
           setValue("evaluation_plugins", next, {
             shouldDirty: true,

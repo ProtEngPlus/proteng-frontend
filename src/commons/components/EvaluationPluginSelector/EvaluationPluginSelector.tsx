@@ -12,6 +12,7 @@ interface Props {
   disabled?: boolean;
   readOnly?: boolean;
   variant?: "form" | "dialog";
+  emptyText?: string;
 }
 
 export default function EvaluationPluginSelector({
@@ -24,6 +25,7 @@ export default function EvaluationPluginSelector({
   disabled = false,
   readOnly = false,
   variant = "form",
+  emptyText = "No plugins selected",
 }: Props) {
   const [activePlugin, setActivePlugin] = useState("");
   const active = selected.includes(activePlugin)
@@ -114,69 +116,73 @@ export default function EvaluationPluginSelector({
                   All available plugins are selected
                 </div>
               )}
-            {selected.length === 0 ? (
-              <div className="text-sm text-pep-dark-gray">
-                No plugins selected
-              </div>
-            ) : (
-              <>
-                <div className="flex flex-wrap gap-2">
-                  {selected.map((plugin) => (
-                    <div
-                      key={plugin}
-                      className={`inline-flex items-center rounded-md border bg-white ${
-                        active === plugin
-                          ? "border-pep-blue text-pep-blue"
-                          : "border-pep-gray-border text-pep-dark-gray"
-                      }`}
+            <div
+              role="group"
+              aria-label="Selected plugins"
+              className="flex flex-wrap items-center gap-2 min-w-[336px] max-w-full min-h-[3.75rem] rounded-md border border-dashed border-pep-gray-border bg-white p-2"
+            >
+              {selected.length === 0 ? (
+                <span className="px-2 text-sm text-pep-dark-gray">
+                  {emptyText}
+                </span>
+              ) : (
+                selected.map((plugin) => (
+                  <div
+                    key={plugin}
+                    className={`inline-flex items-center rounded-md border bg-white ${
+                      active === plugin
+                        ? "border-pep-blue text-pep-blue"
+                        : "border-pep-gray-border text-pep-dark-gray"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      className="px-3 py-2 rounded-md focus-visible:outline focus-visible:outline-pep-blue"
+                      aria-label={`Show details for ${plugin}`}
+                      aria-pressed={active === plugin}
+                      aria-controls={`${id}-details`}
+                      disabled={disabled}
+                      onClick={() => setActivePlugin(plugin)}
                     >
+                      {plugin}
+                      {registryReady && !plugins.includes(plugin) && (
+                        <span className="text-error text-sm ml-2">
+                          Unavailable
+                        </span>
+                      )}
+                    </button>
+                    {!readOnly && (
                       <button
                         type="button"
-                        className="px-3 py-2 rounded-md focus-visible:outline focus-visible:outline-pep-blue"
-                        aria-label={`Show details for ${plugin}`}
-                        aria-pressed={active === plugin}
-                        aria-controls={`${id}-details`}
-                        disabled={disabled}
-                        onClick={() => setActivePlugin(plugin)}
+                        className="size-11 shrink-0 inline-flex items-center justify-center rounded-r-md border-l border-pep-gray-border hover:bg-pep-blue-light focus-visible:outline focus-visible:outline-pep-blue disabled:opacity-50"
+                        aria-label={`Remove plugin ${plugin}`}
+                        disabled={disabled || isLoading}
+                        onClick={() =>
+                          onChange(selected.filter((item) => item !== plugin))
+                        }
                       >
-                        {plugin}
-                        {registryReady && !plugins.includes(plugin) && (
-                          <span className="text-error text-sm ml-2">
-                            Unavailable
-                          </span>
-                        )}
-                      </button>
-                      {!readOnly && (
-                        <button
-                          type="button"
-                          className="size-11 shrink-0 inline-flex items-center justify-center rounded-r-md border-l border-pep-gray-border hover:bg-pep-blue-light focus-visible:outline focus-visible:outline-pep-blue disabled:opacity-50"
-                          aria-label={`Remove plugin ${plugin}`}
-                          disabled={disabled || isLoading}
-                          onClick={() =>
-                            onChange(selected.filter((item) => item !== plugin))
-                          }
+                        <svg
+                          aria-hidden="true"
+                          className="size-6"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
                         >
-                          <svg
-                            aria-hidden="true"
-                            className="size-6"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                          >
-                            <path d="M6 6l12 12M18 6L6 18" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-pep-dark-gray">
-                  Plugins run in the order shown. Select a plugin name to view
-                  its details.
-                </p>
-              </>
+                          <path d="M6 6l12 12M18 6L6 18" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+            {selected.length > 0 && (
+              <p className="text-sm text-pep-dark-gray">
+                Plugins run in the order shown. Select a plugin name to view its
+                details.
+              </p>
             )}
           </div>
         </div>
