@@ -205,7 +205,12 @@ export default function JobTable({
                       )}
                     </td>
                     <td className="place-items-center px-3 py-3">
-                      <Stepper stageId={job.stage_id} state={job.state} />
+                      <Stepper
+                        stageId={job.stage_id}
+                        state={job.state}
+                        evaluationPlugins={job.evaluation_plugins}
+                        evaluationState={job.evaluation_state}
+                      />
                     </td>
                     <td
                       id="table-job-created-at"

@@ -1,3 +1,5 @@
+import { EvaluationStateType } from "./Evaluation.interface";
+
 export type RunType = "auto" | "one-step";
 
 export type State = "CREATED" | "PENDING" | "ONGOING" | "FAILED" | "COMPLETED";
@@ -22,6 +24,8 @@ export type OptionValue =
 
 export interface JobInterface {
   evaluation_plugins?: string[];
+  evaluation_state?: EvaluationStateType;
+  evaluation_run_id?: string;
   id: string;
   user_id: string;
   stage_id: number;
