@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import EvaluationPluginSelector from "../../../../commons/components/EvaluationPluginSelector/EvaluationPluginSelector";
+import EvaluationDropdown from "../../../../commons/components/EvaluationPluginSelector/EvaluationDropdown";
 import Button from "../../../../commons/components/Button/Button";
 import {
   getEvaluationPlugins,
@@ -110,35 +111,37 @@ export function RerunEvaluationOverlay({
             </div>
 
             <div className="bg-white rounded-lg p-8 font-light text-start space-y-6">
-              <div className="grid grid-cols-[1fr,2fr] gap-x-3 items-start">
-                <div>Plugins:</div>
-                <EvaluationPluginSelector
-                  key={`${jobid}-${isVisible}`}
-                  id="rerun-evaluation-plugins"
-                  plugins={plugins}
-                  selected={selectedPlugins}
-                  onChange={setSelectedPlugins}
-                  isLoading={isLoading}
-                  hasRegistryError={plugins.length === 0 && !!errorMessage}
-                  disabled={isSubmitting}
+              <div className="grid grid-cols-[1fr,2fr] gap-x-3 items-center">
+                <label id="rerun-mutation-label" htmlFor="rerun-mutation">
+                  Mutation collection:
+                </label>
+                <EvaluationDropdown
+                  id="rerun-mutation"
+                  labelId="rerun-mutation-label"
+                  options={[
+                    { label: "Latest completed collection", value: "" },
+                    ...mutations.map((mutation) => ({
+                      label: mutation.name,
+                      value: mutation.id,
+                    })),
+                  ]}
+                  value={mutationId}
+                  className="!w-full"
+                  disabled={isLoading || isSubmitting}
+                  onSelect={setMutationId}
                 />
               </div>
-              <div className="grid grid-cols-[1fr,2fr] gap-x-3 items-center">
-                <label htmlFor="rerun-mutation">Mutation collection:</label>
-                <select
-                  id="rerun-mutation"
-                  className="h-[50px] px-3 bg-white border border-pep-gray-border font-light rounded-md focus:border-pep-blue focus:ring-pep-blue"
-                  value={mutationId}
-                  onChange={(e) => setMutationId(e.target.value)}
-                >
-                  <option value="">Latest completed collection</option>
-                  {mutations.map((mutation) => (
-                    <option key={mutation.id} value={mutation.id}>
-                      {mutation.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <EvaluationPluginSelector
+                key={`${jobid}-${isVisible}`}
+                id="rerun-evaluation-plugins"
+                variant="dialog"
+                plugins={plugins}
+                selected={selectedPlugins}
+                onChange={setSelectedPlugins}
+                isLoading={isLoading}
+                hasRegistryError={plugins.length === 0 && !!errorMessage}
+                disabled={isSubmitting}
+              />
               {errorMessage && (
                 <div
                   role="alert"
