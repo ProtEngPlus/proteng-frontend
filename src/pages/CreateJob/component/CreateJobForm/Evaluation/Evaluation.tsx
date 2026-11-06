@@ -101,12 +101,18 @@ export default function Evaluation({
           className="flex items-center gap-3 text-error text-sm"
         >
           <span>{errorMessage}</span>
-          <Icon
-            icon="ic:round-refresh"
-            className="size-7 text-pep-gray cursor-pointer"
+          <button
+            type="button"
             aria-label="Retry"
+            className="rounded-md focus-visible:outline focus-visible:outline-pep-blue"
             onClick={() => setReload((count) => count + 1)}
-          />
+          >
+            <Icon
+              icon="ic:round-refresh"
+              className="size-7 text-pep-gray cursor-pointer"
+              aria-hidden="true"
+            />
+          </button>
         </div>
       )}
       {errors.evaluation_plugins?.message && (
