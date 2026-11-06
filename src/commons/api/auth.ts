@@ -124,3 +124,8 @@ export const successVerification = async (token: string) => {
 
   return res;
 };
+
+export const tooManyAttemptsMessage = (retryAfterSeconds: number): string => {
+  const minutes = Math.ceil(retryAfterSeconds / 60);
+  return `Too many failed attempts. Please try again in ${minutes} minute${minutes === 1 ? "" : "s"}.`;
+};
