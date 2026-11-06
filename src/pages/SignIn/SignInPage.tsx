@@ -5,7 +5,11 @@ import Button from "../../commons/components/Button/Button";
 import { useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { useAuth } from "../../commons/hooks/useAuth";
-import { getRetryAfterSeconds, sendVerification } from "../../commons/api/auth";
+import {
+  getRetryAfterSeconds,
+  sendVerification,
+  tooManyAttemptsMessage,
+} from "../../commons/api/auth";
 import { resendCooldownSeconds } from "../../commons/configs/verificationConfig";
 import { ENVIRONMENT } from "../../commons/configs/envConfig";
 import axios from "axios";
@@ -32,6 +36,15 @@ export default function SignInPage() {
       await login(email, data.password, "user");
       navigate("/dashboard");
     } catch (error: unknown) {
+      const retryAfter = getRetryAfterSeconds(error);
+      if (retryAfter !== null) {
+        setError("password", {
+          type: "manual",
+          message: tooManyAttemptsMessage(retryAfter),
+        });
+        return;
+      }
+
       if (axios.isAxiosError(error) && error.response) {
         const { message } = error.response.data;
 
