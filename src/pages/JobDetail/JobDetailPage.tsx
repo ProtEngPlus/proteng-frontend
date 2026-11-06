@@ -405,6 +405,7 @@ export default function JobDetailPage() {
                 key={evaluationVisit}
                 jobid={job.id}
                 jobState={job.state}
+                evaluationPlugins={job.evaluation_plugins}
               />
             </div>
           </div>

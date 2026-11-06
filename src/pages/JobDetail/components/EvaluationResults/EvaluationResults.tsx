@@ -103,10 +103,13 @@ const waitingLabel = (run: EvaluationRunInterface, plugin: string) => {
 export default function EvaluationResults({
   jobid,
   jobState,
+  evaluationPlugins = [],
 }: {
   jobid: string;
   jobState: State;
+  evaluationPlugins?: string[];
 }) {
+  const expectsEvaluation = evaluationPlugins.length > 0;
   const [runs, setRuns] = useState<EvaluationRunInterface[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedRunId, setSelectedRunId] = useState("");
@@ -149,7 +152,7 @@ export default function EvaluationResults({
         const list: EvaluationRunInterface[] = response?.data ?? [];
         shouldPoll =
           list.some((item) => item.state === "ONGOING") ||
-          (jobState === "ONGOING" && list.length === 0);
+          (jobState === "ONGOING" && expectsEvaluation && list.length === 0);
         setRuns(list);
         setIsLoaded(true);
         const runId = list.some((item) => item.id === selectedRunId)
@@ -185,7 +188,7 @@ export default function EvaluationResults({
       isCancelled = true;
       clearTimeout(timer);
     };
-  }, [jobid, jobState, selectedRunId, runsVersion]);
+  }, [jobid, jobState, expectsEvaluation, selectedRunId, runsVersion]);
 
   const isOngoing = detail?.run.state === "ONGOING";
 
