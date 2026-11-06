@@ -23,6 +23,7 @@ import SelectInput from "../../../../commons/components/Input/SelectInput";
 import { State } from "../../../../commons/interfaces/Job.interface";
 import { RerunEvaluationOverlay } from "../Overlay/RerunEvaluationOverlay";
 import { getErrorMessage } from "../../../../commons/api/utils";
+import { getJob } from "../../../../commons/api/job";
 
 const REFRESH_INTERVAL_MS = 5000;
 
@@ -110,6 +111,7 @@ export default function EvaluationResults({
   evaluationPlugins?: string[];
 }) {
   const expectsEvaluation = evaluationPlugins.length > 0;
+  const [currentJobState, setCurrentJobState] = useState<State>(jobState);
   const [runs, setRuns] = useState<EvaluationRunInterface[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedRunId, setSelectedRunId] = useState("");
@@ -140,6 +142,10 @@ export default function EvaluationResults({
   }, [selectedRunId, setRunValue]);
 
   useEffect(() => {
+    setCurrentJobState(jobState);
+  }, [jobState]);
+
+  useEffect(() => {
     let isCancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let shouldPoll = false;
@@ -150,9 +156,19 @@ export default function EvaluationResults({
         const response = await getJobEvaluations(jobid);
         if (isCancelled) return;
         const list: EvaluationRunInterface[] = response?.data ?? [];
+        const runIsOngoing = list.some((item) => item.state === "ONGOING");
+        let latestJobState = currentJobState;
+        if (
+          !runIsOngoing &&
+          latestJobState === "ONGOING" &&
+          expectsEvaluation
+        ) {
+          const jobResponse = await getJob(jobid);
+          if (isCancelled) return;
+          latestJobState = jobResponse?.data?.state ?? latestJobState;
+        }
         shouldPoll =
-          list.some((item) => item.state === "ONGOING") ||
-          (jobState === "ONGOING" && expectsEvaluation && list.length === 0);
+          runIsOngoing || (latestJobState === "ONGOING" && expectsEvaluation);
         setRuns(list);
         setIsLoaded(true);
         const runId = list.some((item) => item.id === selectedRunId)
@@ -170,6 +186,9 @@ export default function EvaluationResults({
         }
         setSelectedRunId(runId);
         setErrorMessage("");
+        if (latestJobState !== currentJobState) {
+          setCurrentJobState(latestJobState);
+        }
       } catch (error) {
         if (!isCancelled) {
           setErrorMessage(
@@ -188,16 +207,19 @@ export default function EvaluationResults({
       isCancelled = true;
       clearTimeout(timer);
     };
-  }, [jobid, jobState, expectsEvaluation, selectedRunId, runsVersion]);
+  }, [jobid, currentJobState, expectsEvaluation, selectedRunId, runsVersion]);
 
   const isOngoing = detail?.run.state === "ONGOING";
 
   const run = detail?.run.id === selectedRunId ? detail.run : undefined;
   const hasOngoingRun = runs.some((item) => item.state === "ONGOING");
   const canRerun =
-    isLoaded && !errorMessage && jobState === "COMPLETED" && !hasOngoingRun;
+    isLoaded &&
+    !errorMessage &&
+    currentJobState === "COMPLETED" &&
+    !hasOngoingRun;
   const rerunHint =
-    jobState !== "COMPLETED"
+    currentJobState !== "COMPLETED"
       ? "Evaluation can be run after the job is completed"
       : hasOngoingRun
         ? "Wait until the running evaluation finishes"
