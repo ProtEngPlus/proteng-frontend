@@ -7,6 +7,7 @@ import { RunType } from "../interfaces/Job.interface";
 
 // default create job detail
 export const defaultCreateJobDetail: CreateJobDetail = {
+  evaluation_plugins: [],
   name: "",
   description: "",
   input_protein:

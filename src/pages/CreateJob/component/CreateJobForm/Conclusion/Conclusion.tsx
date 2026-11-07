@@ -17,6 +17,7 @@ import { createJobConfig } from "../../../../../commons/configs/createJobConfig"
 import { useAuth } from "../../../../../commons/hooks/useAuth";
 import { ReportInterface } from "../../../../../commons/interfaces/Report.interface";
 import NotificationToggle from "../../../../../commons/components/Job/NotificationToggle/NotificationToggle";
+import Evaluation from "../Evaluation/Evaluation";
 
 interface Props {
   isWithConfig: boolean;
@@ -201,6 +202,7 @@ export default function Conclusion({
           isConclusion={true}
           onEdit={false}
         />
+        <Evaluation isConclusion={true} onEdit={false} />
       </div>
     </div>
   );

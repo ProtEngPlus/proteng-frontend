@@ -215,6 +215,7 @@ export default function Pipeline({
     onConfirm: async (name, description) => {
       setIsSaveConfigVisible(false);
       const jobConfig: CreateJobConfiguration = {
+        evaluation_plugins: [...(job.evaluation_plugins ?? [])],
         name: name,
         description: description,
         ref_job_id: job.id,

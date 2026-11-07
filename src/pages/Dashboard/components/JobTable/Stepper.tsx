@@ -1,13 +1,23 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { State } from "../../../../commons/interfaces/Job.interface";
+import { EvaluationStateType } from "../../../../commons/interfaces/Evaluation.interface";
 
 export default function Stepper({
   stageId,
   state,
+  evaluationPlugins = [],
+  evaluationState,
 }: {
   stageId: number;
   state: State;
+  evaluationPlugins?: string[];
+  evaluationState?: EvaluationStateType;
 }) {
+  const hasEvaluation = evaluationPlugins.length > 0 || !!evaluationState;
+  const stepCount = hasEvaluation ? 5 : 4;
+  const currentStep = evaluationState ? 4 : stageId;
+  const currentState: State = evaluationState ?? state;
+
   const getTooltipText = (index: number): string => {
     switch (index) {
       case 0:
@@ -16,23 +26,25 @@ export default function Stepper({
         return "Protein Representation";
       case 2:
         return "Top Model";
-      default:
+      case 3:
         return "Mutation";
+      default:
+        return "Evaluation";
     }
   };
 
   return (
     <ol className="flex items-center w-fit">
-      {[...Array(4)].map((_, index) => (
+      {[...Array(stepCount)].map((_, index) => (
         <div key={index}>
           <li
             className={`flex items-center w-full group ${
               // connect line
-              index < 3
+              index < stepCount - 1
                 ? "after:content-[''] after:w-full after:h-1 after:border-b after:border-4"
                 : ""
             } ${
-              index < stageId
+              index < currentStep
                 ? "after:border-pep-green"
                 : "after:border-pep-gray-border"
             }`}
@@ -41,24 +53,24 @@ export default function Stepper({
               {/* Stepper */}
               <div
                 className={`flex flex-col items-center justify-center size-6 rounded-full lg:h-6 lg:w-6 shrink-0 ${
-                  index < stageId // previous step
+                  index < currentStep // previous step
                     ? "bg-pep-green"
-                    : index === stageId // current step
-                      ? state === "COMPLETED"
+                    : index === currentStep // current step
+                      ? currentState === "COMPLETED"
                         ? "bg-pep-green"
-                        : state === "FAILED"
+                        : currentState === "FAILED"
                           ? "border-2 border-error text-xl leading-6 text-error"
-                          : state === "PENDING"
+                          : currentState === "PENDING"
                             ? "border-2 border-pep-green"
-                            : state === "ONGOING"
+                            : currentState === "ONGOING"
                               ? "border-2 border-pep-green"
                               : "bg-pep-gray-light border-2 border-pep-gray-border"
                       : "bg-pep-gray-light border-2 border-pep-gray-border" // incoming step
                 }`}
               >
-                {index === stageId && state === "FAILED" ? (
+                {index === currentStep && currentState === "FAILED" ? (
                   "!"
-                ) : index === stageId && state === "ONGOING" ? (
+                ) : index === currentStep && currentState === "ONGOING" ? (
                   <Icon
                     icon="pepicons-pencil:dots-x"
                     className="text-pep-green w-full h-full"
