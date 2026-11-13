@@ -68,6 +68,13 @@ export const resetPassword = async (password: string, token: string) => {
   return res;
 };
 
+export const checkResetToken = async (token: string) => {
+  const path =
+    BACKEND_BASE_URL +
+    `/proteng-user-mgmt/auth/resetpassword/${encodeURIComponent(token)}`;
+  await apiClient.get(path);
+};
+
 export const changePassword = async (
   current_password: string,
   new_password: string,
