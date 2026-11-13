@@ -199,9 +199,10 @@ export const createJobConfig: CreateJobConfig = {
             name: "Database",
             id: "database",
             type: "dropdown",
-            description: "Database targeted for protein query",
-            dropdownItems: ["nr"],
-            default: "nr",
+            description:
+              "Database targeted for protein query. nr_cluster_seq (ClusteredNR) groups proteins that are over 90% identical into one representative, so searches finish much faster than nr",
+            dropdownItems: ["nr_cluster_seq", "nr"],
+            default: "nr_cluster_seq",
             additionalValidation: {
               required: { value: true, message: "Database is required." },
             },
@@ -474,7 +475,7 @@ export const createJobConfig: CreateJobConfig = {
             id: "n_splits",
             type: "number",
             description:
-              "The number of dataset splits for training, validation, and testing. Each split consists of groups of datasets with different associated data More splits (N) reduce bias, prevent overfitting, and improve generalization",
+              "The number of dataset splits for training, validation, and testing. Each split consists of groups of datasets with different associated dataMore splits (N) reduce bias, prevent overfitting, and improve generalization",
             default: 2,
             additionalValidation: {
               required: { value: true, message: "N Splits is required." },
@@ -568,7 +569,7 @@ export const createJobConfig: CreateJobConfig = {
             id: "train_batch_sizes",
             type: "multiNumberDropdown",
             description:
-              "The number of training examples the model sees before updating its internal parameters (number of samples per iteration) Multiple batch sizes can be selected to find the best one",
+              "The number of training examples the model sees before updating its internal parameters (number of samples per iteration)Multiple batch sizes can be selected to find the best one",
             dropdownItems: [24, 32, 64, 96, 128],
             default: [24, 32],
             additionalValidation: {
@@ -598,7 +599,7 @@ export const createJobConfig: CreateJobConfig = {
             id: "alpha",
             type: "dropdown",
             description:
-              "A measure of how much the model is overfitting, Regularization Strength As alpha increases, strength increases, leading to more variance from the regular model",
+              "A measure of how much the model is overfitting, Regularization StrengthAs alpha increases, strength increases, leading to more variance from the regular model",
             dropdownItems: [100, 10, 1, 0.1, 0.01, 0.001],
             default: 0.1,
             additionalValidation: {
