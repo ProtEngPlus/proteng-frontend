@@ -25,7 +25,8 @@ export default function SentResetPasswordPage() {
           <div className="space-y-3">
             <h1 className="text-4xl">Check your email</h1>
             <p className="font-light text-gray-500">
-              A password reset link has been sent to your inbox. <br />
+              If an account exists for this email, a password reset link has
+              been sent to your inbox. <br />
               Please check your email and click the link to reset your password.
             </p>
           </div>

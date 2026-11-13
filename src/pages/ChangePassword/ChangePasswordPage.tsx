@@ -12,12 +12,17 @@ import {
   SuccessOverlay,
   SuccessOverlayProps,
 } from "../../commons/components/ModalOverlay/SuccessOverlay";
-import { changePassword } from "../../commons/api/auth";
+import {
+  changePassword,
+  getRetryAfterSeconds,
+  tooManyAttemptsMessage,
+} from "../../commons/api/auth";
 import { useAuth } from "../../commons/hooks/useAuth";
 import {
   passwordPolicyHint,
   passwordPolicyValidation,
 } from "../../commons/configs/passwordConfig";
+import axios from "axios";
 
 type FormValues = {
   current_password: string;
@@ -48,10 +53,17 @@ export default function ChangePasswordPage() {
         setSuccessVisible(true);
       } catch (error) {
         console.error(error);
-        setError("current_password", {
-          type: "manual",
-          message: "Incorrect Password",
-        });
+        const retryAfter = getRetryAfterSeconds(error);
+        const isIncorrect =
+          axios.isAxiosError(error) &&
+          error.response?.data?.message === "error: incorrect current password";
+        let message = "Could not change your password. Please try again.";
+        if (retryAfter !== null) {
+          message = tooManyAttemptsMessage(retryAfter);
+        } else if (isIncorrect) {
+          message = "Incorrect Password";
+        }
+        setError("current_password", { type: "manual", message });
       } finally {
         setSaving(false);
       }
