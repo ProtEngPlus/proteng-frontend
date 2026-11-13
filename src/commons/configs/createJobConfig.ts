@@ -5,6 +5,8 @@ import {
 } from "../interfaces/CreateJob.interface";
 import { RunType } from "../interfaces/Job.interface";
 
+export type DropdownOption = { label: string; value: string };
+
 // default create job detail
 export const defaultCreateJobDetail: CreateJobDetail = {
   evaluation_plugins: [],
@@ -104,7 +106,7 @@ export interface MethodParameter {
   default?: string | number | number[] | number[][] | boolean | RunType;
   low?: number;
   high?: number;
-  dropdownItems?: string[] | number[];
+  dropdownItems?: string[] | number[] | DropdownOption[];
   additionalValidation?: ValidationRule;
 }
 
@@ -201,7 +203,10 @@ export const createJobConfig: CreateJobConfig = {
             type: "dropdown",
             description:
               "Database targeted for protein query. nr_cluster_seq (ClusteredNR) groups proteins that are over 90% identical into one representative, so searches finish much faster than nr",
-            dropdownItems: ["nr_cluster_seq", "nr"],
+            dropdownItems: [
+              { label: "ClusteredNR", value: "nr_cluster_seq" },
+              { label: "nr", value: "nr" },
+            ],
             default: "nr_cluster_seq",
             additionalValidation: {
               required: { value: true, message: "Database is required." },

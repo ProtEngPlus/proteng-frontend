@@ -5,7 +5,7 @@ export type DropdownProps = {
   id: string;
   label: string;
   defaultValue?: string;
-  options: string[];
+  options: (string | Option)[];
   disabled?: boolean;
   additionalValidation?: Record<string, ValidationProps>;
   onEdit?: boolean;
@@ -22,10 +22,9 @@ export default function DropdownInput({
   onEdit = true,
   formatInput = 1,
 }: DropdownProps) {
-  const optionsValue: Option[] = options.map((option) => ({
-    label: option,
-    value: option,
-  }));
+  const optionsValue: Option[] = options.map((option) =>
+    typeof option === "string" ? { label: option, value: option } : option,
+  );
 
   return (
     <div

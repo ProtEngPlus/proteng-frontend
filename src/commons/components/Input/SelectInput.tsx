@@ -82,7 +82,10 @@ export default function SelectInput({
        relative custom-select`}
     >
       {!onEdit ? (
-        <div>{currentValue}</div>
+        <div>
+          {options.find((option) => option.value === currentValue)?.label ??
+            currentValue}
+        </div>
       ) : (
         <div id={id}>
           <div
