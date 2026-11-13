@@ -84,7 +84,7 @@ export default function NumberInput({
       </label>
       <div className="w-fit min-w-fit">
         {!onEdit ? (
-          <div className="w-24 text-start">{currentValue}</div>
+          <div className="w-36 text-start">{currentValue}</div>
         ) : (
           <div>
             <div className="relative w-fit min-w-fit mb-5">
@@ -124,7 +124,7 @@ export default function NumberInput({
                   e.preventDefault();
                 }}
                 className={clsx(
-                  "h-[40px] w-24 p-2 bg-white border text-sm border-pep-gray-border font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
+                  "h-[40px] w-36 p-2 bg-white border text-sm border-pep-gray-border font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
                   {
                     "border-error": !!errors[id],
                     "border-gray-border": !errors[id],

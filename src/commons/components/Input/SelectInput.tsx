@@ -78,7 +78,7 @@ export default function SelectInput({
   return (
     <div
       className={`
-      ${formatInput === 2 ? "min-w-24 w-max text-start" : "w-full"}
+      ${formatInput === 2 ? "w-36 text-start" : "w-full"}
        relative custom-select`}
     >
       {!onEdit ? (
