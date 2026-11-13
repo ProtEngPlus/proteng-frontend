@@ -55,7 +55,7 @@ export default function DropdownInput({
           defaultValue={defaultValue}
           options={optionsValue}
           className={`
-            ${formatInput === 2 ? "w-24" : "!w-[336px]"}`}
+            ${formatInput === 2 ? "min-w-24 w-max" : "!w-[336px]"}`}
           disabled={disabled}
           additionalValidation={additionalValidation}
           onEdit={onEdit}
