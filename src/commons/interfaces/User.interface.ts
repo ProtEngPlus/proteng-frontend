@@ -1,5 +1,4 @@
-//can be add from admin later (edit later)
-export type Role = "admin" | "user" | "staff";
+export type Role = "user" | "staff";
 
 export type UserRole =
   "researcher" | "researcher_assistant" | "lab_manager" | "lab_technician";
