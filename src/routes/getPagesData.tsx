@@ -13,7 +13,7 @@ import ChangePasswordApp from "../pages/ChangePassword/ChangePasswordApp";
 import CreateJobApp from "../pages/CreateJob/CreateJobApp";
 import JobDetailApp from "../pages/JobDetail/JobDetailApp";
 import AssayLibraryApp from "../pages/AssayLibrary/AssayLibraryApp";
-import NotFoundApp from "../pages/ฺNotFound/NotFoundApp";
+import NotFoundApp from "../pages/NotFound/NotFoundApp";
 
 const pagesData = [
   {
