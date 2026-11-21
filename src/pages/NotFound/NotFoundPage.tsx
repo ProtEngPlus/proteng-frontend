@@ -28,6 +28,7 @@ export default function NotFoundPage() {
             id="to-home"
             text={isAuthenticated ? "Back to dashboard" : "Back to sign in"}
             buttonType="submit"
+            className="!w-fit min-w-48 whitespace-nowrap"
             onClick={() =>
               navigate(isAuthenticated ? "/dashboard" : "/sign-in")
             }
