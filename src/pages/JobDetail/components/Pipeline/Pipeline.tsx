@@ -64,6 +64,14 @@ import { createRoot } from "react-dom/client";
 import JSZip from "jszip";
 import NotificationToggle from "../../../../commons/components/Job/NotificationToggle/NotificationToggle";
 
+const buildPipeline = (meta: string[]): PipelineItem[] =>
+  defaultPipeline.map((step, index) => {
+    const matched = Pipelines[index]?.subMethod.find(
+      (value) => value.toLowerCase() === meta[index] || value === meta[index],
+    );
+    return { ...step, subMethod: matched ?? step.subMethod };
+  });
+
 export default function Pipeline({
   job,
   isEditPipeline,
@@ -80,23 +88,13 @@ export default function Pipeline({
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(job.stage_id);
   const [isOpen, setIsOpen] = useState(false);
-  const [pipeline, setPipeline] = useState<PipelineItem[]>(defaultPipeline);
+  const [pipeline, setPipeline] = useState<PipelineItem[]>(() =>
+    buildPipeline(job.meta),
+  );
   const [queryResult, setQueryResult] = useState<QueryResult>();
 
   useEffect(() => {
-    const updatedPipeline = [...pipeline];
-
-    job.meta.forEach((subMethod, index) => {
-      Pipelines[index].subMethod.forEach((value) => {
-        if (value.toLowerCase() === subMethod || value === subMethod) {
-          updatedPipeline[index] = {
-            ...updatedPipeline[index],
-            subMethod: value,
-          };
-        }
-      });
-    });
-    setPipeline(updatedPipeline);
+    setPipeline(buildPipeline(job.meta));
   }, [job.meta]);
 
   // handle click outside for ...'s button

@@ -8,7 +8,7 @@ export default function InputFields({
   isEdit,
   proteinLength,
 }: {
-  jobValue: Record<string, MethodParameter["default"]>;
+  jobValue?: Record<string, MethodParameter["default"]>;
   jobConfig: {
     formatInput: number;
     description: string;
@@ -24,15 +24,15 @@ export default function InputFields({
   const getFieldValue = (value: MethodParameter) => {
     if (value.type === "rangeNumber") {
       const low =
-        jobValue[`${value.id}_low`] ?? (isEdit ? value.low : undefined);
+        jobValue?.[`${value.id}_low`] ?? (isEdit ? value.low : undefined);
       const high =
-        jobValue[`${value.id}_high`] ?? (isEdit ? value.high : undefined);
+        jobValue?.[`${value.id}_high`] ?? (isEdit ? value.high : undefined);
       return {
         low: low === undefined ? undefined : Number(low),
         high: high === undefined ? undefined : Number(high),
       };
     }
-    return jobValue[value.id] ?? (isEdit ? value.default : undefined);
+    return jobValue?.[value.id] ?? (isEdit ? value.default : undefined);
   };
 
   return (
