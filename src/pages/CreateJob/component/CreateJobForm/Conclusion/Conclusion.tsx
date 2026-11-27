@@ -16,6 +16,8 @@ import ReportPDF from "../../../../../commons/components/ReportPDF/ReportPDF";
 import { createJobConfig } from "../../../../../commons/configs/createJobConfig";
 import { useAuth } from "../../../../../commons/hooks/useAuth";
 import { ReportInterface } from "../../../../../commons/interfaces/Report.interface";
+import NotificationToggle from "../../../../../commons/components/Job/NotificationToggle/NotificationToggle";
+import Evaluation from "../Evaluation/Evaluation";
 
 interface Props {
   isWithConfig: boolean;
@@ -104,17 +106,12 @@ export default function Conclusion({
       <div className="flex flex-row justify-between space-x-6">
         <h1 className="font-light text-pep-orange text-xl">Conclusion</h1>
         <div className="flex space-x-6 items-center">
-          <Icon
-            icon={
-              is_notification_on
-                ? "carbon:notification-filled"
-                : "carbon:notification-off-filled"
-            }
-            className={` cursor-pointer size-[30px] ${
-              is_notification_on ? "text-pep-orange" : "text-error"
-            }`}
-            onClick={() => setValue("is_notification_on", !is_notification_on)}
+          <NotificationToggle
+            isOn={is_notification_on}
+            runType={run_type}
+            onToggle={() => setValue("is_notification_on", !is_notification_on)}
           />
+
           <div className="space-x-2">
             <Button
               id="auto-run"
@@ -205,6 +202,7 @@ export default function Conclusion({
           isConclusion={true}
           onEdit={false}
         />
+        <Evaluation isConclusion={true} onEdit={false} />
       </div>
     </div>
   );

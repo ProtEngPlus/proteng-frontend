@@ -151,7 +151,7 @@ function RegionListEditor({
   );
 
   const inputClass = clsx(
-    "h-[40px] w-24 p-2 bg-white border text-sm font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
+    "h-[40px] w-36 p-2 bg-white border text-sm font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
     problem ? "border-error" : "border-pep-gray-border",
   );
 

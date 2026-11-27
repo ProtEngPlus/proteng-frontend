@@ -16,6 +16,7 @@ export default function ForgetPasswordPage() {
   const form = useForm<FormValues>();
   const {
     handleSubmit,
+    setError,
     formState: { isSubmitting },
   } = form;
   const navigate = useNavigate();
@@ -29,6 +30,10 @@ export default function ForgetPasswordPage() {
       });
     } catch (error: unknown) {
       console.error(error);
+      setError("email", {
+        type: "manual",
+        message: "Something went wrong. Please try again.",
+      });
     }
   });
 

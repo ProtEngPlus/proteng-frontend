@@ -6,10 +6,6 @@ export interface Content {
     completed: number;
     failed: number;
   };
-  best_assay_score: {
-    id: string;
-    assay_score: number;
-  };
   recent_job: {
     id: string;
     name: string;

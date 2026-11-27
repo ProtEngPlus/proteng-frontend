@@ -15,6 +15,7 @@ import HelperText from "../../../../../commons/components/CreateJob/InputField/H
 import InputProtein from "../../../../../commons/components/CreateJob/InputProtein/InputProtein";
 import InputFields from "../../../../../commons/components/CreateJob/InputField/InputFields";
 import { QueryResult } from "../../../../../commons/interfaces/QueryResult.interface";
+import AssayTypeSelect from "../../../../../commons/components/AssayType/AssayTypeSelect";
 
 interface Props {
   isWithConfig?: boolean;
@@ -41,7 +42,20 @@ export default function ProteinQuery({
   queryResult,
   setQueryResult,
 }: Props) {
-  const { getValues, watch } = useFormContext();
+  const {
+    getValues,
+    watch,
+    register,
+    setValue,
+    formState: { errors },
+  } = useFormContext();
+  const assayTypeId = watch("assay_type_id") ?? "";
+
+  useEffect(() => {
+    register("assay_type_id", {
+      required: "Assay score type is required.",
+    });
+  }, [register]);
 
   const currentSubMethod =
     watch(`tool_${stepsForCreateJob[step - 1]}`) ??
@@ -126,6 +140,33 @@ export default function ProteinQuery({
             }}
             onEdit={isEditInfo}
           />
+
+          <div className="flex flex-row gap-x-3 items-center">
+            <Icon icon="ph:flask" className="text-gray-400 size-6" />
+            <label htmlFor="assay_type_id">
+              Assay Score Type<span className="text-red-500">*</span> :
+            </label>
+          </div>
+
+          <div className="space-y-1">
+            <AssayTypeSelect
+              id="assay_type_id"
+              value={assayTypeId}
+              disabled={!isEditInfo}
+              hasError={!!errors.assay_type_id}
+              onChange={(id) =>
+                setValue("assay_type_id", id, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
+            />
+            {errors.assay_type_id && (
+              <p className="text-sm text-error">
+                {String(errors.assay_type_id.message)}
+              </p>
+            )}
+          </div>
         </div>
       </Context>
       <ContextWithHelperText

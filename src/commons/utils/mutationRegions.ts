@@ -137,7 +137,6 @@ export function describeMutationOptions(
       text: formatRange(options.num_mutations_low, options.num_mutations_high),
     });
   }
-  addText("Amino Acids", "amino_acid_set");
   addText("Temperature", "temperature");
   addText("Mutate Position Range", "mutate_pos_range");
   return rows;

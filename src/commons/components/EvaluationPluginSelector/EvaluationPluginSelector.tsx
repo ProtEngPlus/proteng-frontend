@@ -1,0 +1,237 @@
+import { useEffect, useState } from "react";
+import EvaluationDropdown from "./EvaluationDropdown";
+import { evaluationPluginInfo } from "../../configs/evaluationPluginConfig";
+
+interface Props {
+  id: string;
+  plugins: string[];
+  selected: string[];
+  onChange: (plugins: string[]) => void;
+  isLoading?: boolean;
+  hasRegistryError?: boolean;
+  disabled?: boolean;
+  readOnly?: boolean;
+  variant?: "form" | "dialog";
+  emptyText?: string;
+  onActiveChange?: (plugin: string) => void;
+}
+
+export default function EvaluationPluginSelector({
+  id,
+  plugins,
+  selected,
+  onChange,
+  isLoading = false,
+  hasRegistryError = false,
+  disabled = false,
+  readOnly = false,
+  variant = "form",
+  emptyText = "No plugins selected",
+  onActiveChange,
+}: Props) {
+  const [activePlugin, setActivePlugin] = useState("");
+  const active = selected.includes(activePlugin)
+    ? activePlugin
+    : (selected[0] ?? "");
+  const available = plugins.filter((plugin) => !selected.includes(plugin));
+  const registryReady = !isLoading && !hasRegistryError;
+  const canAdd = !disabled && registryReady && available.length > 0;
+  const canClear = !disabled && !isLoading && selected.length > 0;
+  const labelId = `${id}-label`;
+  const activeInfo = active ? evaluationPluginInfo[active] : undefined;
+
+  useEffect(() => {
+    onActiveChange?.(active);
+  }, [active, onActiveChange]);
+
+  const addPlugin = (plugin: string) => {
+    if (!canAdd || !available.includes(plugin)) return;
+    onChange([...selected, plugin]);
+    setActivePlugin(plugin);
+  };
+
+  const addAll = () => {
+    if (!canAdd) return;
+    onChange([...selected, ...available]);
+    if (!active) setActivePlugin(available[0]);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className={variant === "form" ? "w-[40%]" : ""}>
+        <div
+          className={
+            variant === "form"
+              ? "justify-between items-start space-x-3 grid grid-cols-[minmax(0,1fr),minmax(0,4fr)] max-w-[1000px]"
+              : "grid grid-cols-[1fr,2fr] gap-x-3 items-start"
+          }
+        >
+          <label
+            id={labelId}
+            htmlFor={readOnly ? undefined : id}
+            className={`font-light ${variant === "form" ? "w-[40%]" : ""}`}
+          >
+            Plugins:
+          </label>
+          <div className="space-y-3">
+            {!readOnly && (
+              <div
+                className={`flex items-center gap-x-5 gap-y-2 ${
+                  variant === "form"
+                    ? "flex-nowrap whitespace-nowrap"
+                    : "flex-wrap"
+                }`}
+              >
+                <EvaluationDropdown
+                  id={id}
+                  labelId={labelId}
+                  options={available.map((plugin) => ({
+                    label: plugin,
+                    value: plugin,
+                  }))}
+                  placeholder={
+                    isLoading ? "Loading plugins..." : "Select a plugin"
+                  }
+                  disabled={!canAdd}
+                  onSelect={addPlugin}
+                />
+                <div className="flex items-center gap-x-4 text-sm">
+                  <button
+                    type="button"
+                    className="text-pep-blue underline disabled:text-label disabled:no-underline disabled:cursor-not-allowed"
+                    disabled={!canAdd}
+                    onClick={addAll}
+                  >
+                    Add all
+                  </button>
+                  <button
+                    type="button"
+                    className="text-pep-blue underline disabled:text-label disabled:no-underline disabled:cursor-not-allowed"
+                    disabled={!canClear}
+                    onClick={() => onChange([])}
+                  >
+                    Clear all
+                  </button>
+                </div>
+              </div>
+            )}
+            {!readOnly && registryReady && plugins.length === 0 && (
+              <div className="text-sm text-pep-dark-gray">
+                No evaluation plugin is available
+              </div>
+            )}
+            {!readOnly &&
+              registryReady &&
+              plugins.length > 0 &&
+              available.length === 0 && (
+                <div className="text-sm text-pep-dark-gray">
+                  All available plugins are selected
+                </div>
+              )}
+            <div
+              role="group"
+              aria-label="Selected plugins"
+              className="flex flex-wrap items-center gap-2 min-w-[336px] max-w-full min-h-16 rounded-md border-2 border-dashed border-pep-gray bg-white p-2"
+            >
+              {selected.length === 0 ? (
+                <span className="px-2 text-sm text-pep-dark-gray">
+                  {emptyText}
+                </span>
+              ) : (
+                selected.map((plugin) => (
+                  <div
+                    key={plugin}
+                    className={`inline-flex items-center rounded-md border bg-white ${
+                      active === plugin
+                        ? "border-pep-blue text-pep-blue"
+                        : "border-pep-gray-border text-pep-dark-gray"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      className="px-3 py-2 rounded-md focus-visible:outline focus-visible:outline-pep-blue"
+                      aria-label={`Show details for ${plugin}`}
+                      aria-pressed={active === plugin}
+                      aria-controls={`${id}-details`}
+                      disabled={disabled}
+                      onClick={() => setActivePlugin(plugin)}
+                    >
+                      {plugin}
+                      {registryReady && !plugins.includes(plugin) && (
+                        <span className="text-error text-sm ml-2">
+                          Unavailable
+                        </span>
+                      )}
+                    </button>
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        className="size-11 shrink-0 inline-flex items-center justify-center rounded-r-md border-l border-pep-gray-border hover:bg-pep-blue-light focus-visible:outline focus-visible:outline-pep-blue disabled:opacity-50"
+                        aria-label={`Remove plugin ${plugin}`}
+                        disabled={disabled || isLoading}
+                        onClick={() =>
+                          onChange(selected.filter((item) => item !== plugin))
+                        }
+                      >
+                        <svg
+                          aria-hidden="true"
+                          className="size-6"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                        >
+                          <path d="M6 6l12 12M18 6L6 18" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+            {selected.length > 0 && (
+              <p className="text-sm text-pep-dark-gray">
+                Plugins run in the order shown. Select a plugin name to view its
+                details.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+      {active && (
+        <section
+          id={`${id}-details`}
+          aria-label="Plugin details"
+          className="space-y-2 text-pep-dark-gray"
+        >
+          <h3 className="text-2xl font-normal">{active}</h3>
+          {registryReady && !plugins.includes(active) ? (
+            <p className="text-sm font-light text-error">
+              This plugin is unavailable. Remove it before continuing.
+            </p>
+          ) : activeInfo ? (
+            <>
+              <p className="text-sm font-light">{activeInfo.description}</p>
+              {activeInfo.outputs.length > 0 && (
+                <p className="text-sm font-light">
+                  Output:{" "}
+                  {activeInfo.outputs.map((output, index) => (
+                    <span key={output.name}>
+                      {index > 0 && ", "}
+                      <span className="font-semibold">{output.name}</span>
+                    </span>
+                  ))}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm font-light">
+              No description is available for this plugin.
+            </p>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}

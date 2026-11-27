@@ -5,8 +5,11 @@ import {
 } from "../interfaces/CreateJob.interface";
 import { RunType } from "../interfaces/Job.interface";
 
+export type DropdownOption = { label: string; value: string };
+
 // default create job detail
 export const defaultCreateJobDetail: CreateJobDetail = {
+  evaluation_plugins: [],
   name: "",
   description: "",
   input_protein:
@@ -103,7 +106,7 @@ export interface MethodParameter {
   default?: string | number | number[] | number[][] | boolean | RunType;
   low?: number;
   high?: number;
-  dropdownItems?: string[] | number[];
+  dropdownItems?: string[] | number[] | DropdownOption[];
   additionalValidation?: ValidationRule;
 }
 
@@ -198,9 +201,13 @@ export const createJobConfig: CreateJobConfig = {
             name: "Database",
             id: "database",
             type: "dropdown",
-            description: "Database targeted for protein query",
-            dropdownItems: ["nr"],
-            default: "nr",
+            description:
+              "Database targeted for protein query. nr_cluster_seq (ClusteredNR) groups proteins that are over 90% identical into one representative, so searches finish much faster than nr",
+            dropdownItems: [
+              { label: "ClusteredNR", value: "nr_cluster_seq" },
+              { label: "nr", value: "nr" },
+            ],
+            default: "nr_cluster_seq",
             additionalValidation: {
               required: { value: true, message: "Database is required." },
             },
@@ -473,7 +480,7 @@ export const createJobConfig: CreateJobConfig = {
             id: "n_splits",
             type: "number",
             description:
-              "The number of dataset splits for training, validation, and testing. Each split consists of groups of datasets with different associated data More splits (N) reduce bias, prevent overfitting, and improve generalization",
+              "The number of dataset splits for training, validation, and testing. Each split consists of groups of datasets with different associated dataMore splits (N) reduce bias, prevent overfitting, and improve generalization",
             default: 2,
             additionalValidation: {
               required: { value: true, message: "N Splits is required." },
@@ -567,7 +574,7 @@ export const createJobConfig: CreateJobConfig = {
             id: "train_batch_sizes",
             type: "multiNumberDropdown",
             description:
-              "The number of training examples the model sees before updating its internal parameters (number of samples per iteration) Multiple batch sizes can be selected to find the best one",
+              "The number of training examples the model sees before updating its internal parameters (number of samples per iteration)Multiple batch sizes can be selected to find the best one",
             dropdownItems: [24, 32, 64, 96, 128],
             default: [24, 32],
             additionalValidation: {
@@ -597,7 +604,7 @@ export const createJobConfig: CreateJobConfig = {
             id: "alpha",
             type: "dropdown",
             description:
-              "A measure of how much the model is overfitting, Regularization Strength As alpha increases, strength increases, leading to more variance from the regular model",
+              "A measure of how much the model is overfitting, Regularization StrengthAs alpha increases, strength increases, leading to more variance from the regular model",
             dropdownItems: [100, 10, 1, 0.1, 0.01, 0.001],
             default: 0.1,
             additionalValidation: {
@@ -681,15 +688,6 @@ export const createJobConfig: CreateJobConfig = {
               },
               validate: wholeNumber("Number of mutations"),
             },
-          },
-          {
-            name: "Amino Acids",
-            id: "amino_acid_set",
-            type: "dropdown",
-            description:
-              "The amino acids a position can mutate to. 20 standard are the amino acids proteins are normally made of. U (selenocysteine) is rare in nature and needs special methods to be made in a lab.",
-            dropdownItems: ["20 standard", "20 standard + U"],
-            default: "20 standard",
           },
           {
             name: "Temperature",

@@ -1,11 +1,7 @@
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  getMe,
-  getToken,
-  login as loginApi,
-  logout as logoutApi,
-} from "../api/auth";
+import { getMe, login as loginApi, logout as logoutApi } from "../api/auth";
+import { SESSION_EXPIRED_EVENT } from "../api/client";
 import { User } from "../interfaces/User.interface";
 
 const PUBLIC_ROUTES = [
@@ -29,7 +25,7 @@ type AuthContextType = {
     password: string,
     role: string,
   ) => Promise<User | null>;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType>(
@@ -37,23 +33,13 @@ export const AuthContext = createContext<AuthContextType>(
 );
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(
-    sessionStorage.getItem("user")
-      ? JSON.parse(sessionStorage.getItem("user") as string)
-      : null,
-  );
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const token = getToken();
 
   useEffect(() => {
     if (PUBLIC_ROUTES.includes(location.pathname)) {
-      return;
-    }
-
-    if (!getToken()) {
-      navigate("/sign-in");
       return;
     }
 
@@ -65,12 +51,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
         if (response.code !== 200 || !response.data) {
+          setUser(null);
           navigate("/sign-in");
           return;
         }
-        const { access_token: _access_token, ...userData } = response.data;
-        setUser(userData as User);
-        sessionStorage.setItem("user", JSON.stringify(userData));
+        setUser(response.data);
       })
       .catch((error) => {
         setLoading(false);
@@ -80,6 +65,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
   }, [location.pathname]);
 
+  useEffect(() => {
+    const onSessionExpired = () => {
+      setUser(null);
+      if (!PUBLIC_ROUTES.includes(location.pathname)) {
+        navigate("/sign-in");
+      }
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    return () =>
+      window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+  }, [location.pathname, navigate]);
+
   const login = async (email: string, password: string, role: string) => {
     setLoading(true);
     const response = await loginApi(email, password, role);
@@ -87,19 +84,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
       return null;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { access_token, ...userData } = response.data;
-    setUser(userData as User);
-    sessionStorage.setItem("user", JSON.stringify(userData));
+    setUser(response.data);
     setLoading(false);
-    return userData as User;
+    return response.data;
   };
 
-  const logout = () => {
-    logoutApi();
-    setUser(null);
-    sessionStorage.removeItem("user");
-    navigate("/sign-in");
+  const logout = async () => {
+    try {
+      await logoutApi();
+    } catch (error) {
+      console.error("Logout request failed:", error);
+    } finally {
+      setUser(null);
+      navigate("/sign-in");
+    }
   };
 
   const refreshUser = async () => {
@@ -108,14 +106,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     setUser({ ...user, ...res.data });
-    sessionStorage.setItem("user", JSON.stringify({ ...user, ...res.data }));
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!token,
+        isAuthenticated: !!user,
         loading,
         refreshUser,
         login,

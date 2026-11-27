@@ -38,12 +38,6 @@ export default function MutationReport({
           )}
         />
       )}
-      {"amino_acid_set" in option && (
-        <InfoBox
-          label={"Amino Acids"}
-          text={renderOptionText(option.amino_acid_set)}
-        />
-      )}
       {"mutate_pos_range" in option && (
         <InfoBox
           label={"Mutation Position Range"}

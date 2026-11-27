@@ -52,7 +52,9 @@ export default function GetInputField({
           label={label}
           defaultValue={value ? value.toString() : undefined}
           options={
-            options?.map((item) => (item !== null ? item.toString() : "")) || []
+            options?.map((item) =>
+              typeof item === "object" ? item : String(item ?? ""),
+            ) || []
           }
           additionalValidation={filteredValidation}
           disabled={disable}

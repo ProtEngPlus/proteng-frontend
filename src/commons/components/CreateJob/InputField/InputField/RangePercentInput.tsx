@@ -182,7 +182,7 @@ export default function RangePercentInput({
       {!onEdit ? (
         <div className="w-full min-w-fit flex flex-row justify-between space-x-3 items-center">
           <label>{label}:</label>
-          <div className="w-24 min-w-fit text-start">
+          <div className="w-36 min-w-fit text-start">
             {currentValueLow} - {currentValueHigh}
           </div>
         </div>
@@ -212,7 +212,7 @@ export default function RangePercentInput({
                   onBlur: () => handleBlur(`${id}_low`),
                 })}
                 className={clsx(
-                  "h-[40px] w-24 p-2 bg-white border text-sm border-pep-gray-border font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
+                  "h-[40px] w-36 p-2 bg-white border text-sm border-pep-gray-border font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
                   {
                     "border-error": !!errors[`${id}_low`],
                     "border-gray-border": !errors[`${id}_low`],
@@ -269,7 +269,7 @@ export default function RangePercentInput({
                   onBlur: () => handleBlur(`${id}_high`),
                 })}
                 className={clsx(
-                  "h-[40px] w-24 p-2 bg-white border text-sm border-pep-gray-border font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
+                  "h-[40px] w-36 p-2 bg-white border text-sm border-pep-gray-border font-light placeholder:text-placeholder rounded-md focus:ring-0 focus:border-pep-blue focus:outline-none disabled:cursor-not-allowed disabled:bg-disabled disabled:border-disabled disabled:text-label",
                   {
                     "border-error": !!errors[`${id}_high`],
                     "border-gray-border": !errors[`${id}_high`],

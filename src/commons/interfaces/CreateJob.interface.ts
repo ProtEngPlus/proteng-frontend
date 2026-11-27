@@ -1,6 +1,7 @@
 import { LabResult, OptionValue, RunType, State } from "./Job.interface";
 import { QueryResult } from "./QueryResult.interface";
 import { RunTime } from "./Report.interface";
+import { LabRow } from "./AssayType.interface";
 
 export const stepsForCreateJob = [
   "Protein Query",
@@ -8,6 +9,7 @@ export const stepsForCreateJob = [
   "Upload Lab Input",
   "Top Model",
   "Mutation",
+  "Evaluation",
   "Conclusion",
 ];
 
@@ -22,8 +24,11 @@ export interface PipelineItems {
 }
 
 export interface CreateJobInterface {
+  evaluation_plugins?: string[];
   user_id: string;
   ref_job_id?: string;
+  assay_type_id: string;
+  library_result_ids: string[];
   stage_id: number;
   name: string;
   description: string;
@@ -38,15 +43,17 @@ export interface CreateJobInterface {
 }
 
 export interface CreateJobDetail {
+  assay_type_id?: string;
   name: string;
   description: string;
   input_protein: string;
-  lab_result: { sequence: string; score: number }[]; // to add in table and export csv easier;
+  lab_result: LabRow[];
   run_type: RunType;
   run_time?: Record<string, RunTime> | null;
   is_notification_on: boolean;
   ref_job_id?: string;
   artifact: Record<string, object> | null;
+  evaluation_plugins: string[];
 }
 
 export interface ReportJobDetail {
@@ -78,11 +85,13 @@ export interface JobOption {
 }
 
 export interface JobConfiguration {
+  evaluation_plugins?: string[];
   state: State;
   stage_id: number;
   id: string;
   user_id: string;
   ref_job_id: string;
+  assay_type_id?: string;
   name: string;
   description: string;
   input_protein: string;
@@ -95,10 +104,12 @@ export interface JobConfiguration {
 }
 
 export interface CreateJobConfiguration {
+  evaluation_plugins?: string[];
   state: State;
   stage_id: number;
   user_id: string;
   ref_job_id: string;
+  assay_type_id?: string;
   name: string;
   description: string;
   input_protein: string;

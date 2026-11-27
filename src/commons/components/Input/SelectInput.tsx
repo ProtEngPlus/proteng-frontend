@@ -78,11 +78,14 @@ export default function SelectInput({
   return (
     <div
       className={`
-      ${formatInput === 2 ? "w-24 text-start" : "w-full"}
+      ${formatInput === 2 ? "w-36 text-start" : "w-full"}
        relative custom-select`}
     >
       {!onEdit ? (
-        <div>{currentValue}</div>
+        <div>
+          {options.find((option) => option.value === currentValue)?.label ??
+            currentValue}
+        </div>
       ) : (
         <div id={id}>
           <div

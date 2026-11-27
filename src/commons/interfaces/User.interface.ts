@@ -1,5 +1,4 @@
-//can be add from admin later (edit later)
-export type Role = "admin" | "user" | "staff";
+export type Role = "user" | "staff";
 
 export type UserRole =
   "researcher" | "researcher_assistant" | "lab_manager" | "lab_technician";
@@ -18,10 +17,6 @@ export interface User {
   name: string;
   surname: string;
   user_role?: UserRole;
-}
-
-export interface UserLogin extends User {
-  access_token: string;
 }
 
 export interface UserRegister {

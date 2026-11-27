@@ -62,6 +62,15 @@ import {
 } from "../../../../commons/utils/histogram";
 import { createRoot } from "react-dom/client";
 import JSZip from "jszip";
+import NotificationToggle from "../../../../commons/components/Job/NotificationToggle/NotificationToggle";
+
+const buildPipeline = (meta: string[]): PipelineItem[] =>
+  defaultPipeline.map((step, index) => {
+    const matched = Pipelines[index]?.subMethod.find(
+      (value) => value.toLowerCase() === meta[index] || value === meta[index],
+    );
+    return { ...step, subMethod: matched ?? step.subMethod };
+  });
 
 export default function Pipeline({
   job,
@@ -79,23 +88,13 @@ export default function Pipeline({
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(job.stage_id);
   const [isOpen, setIsOpen] = useState(false);
-  const [pipeline, setPipeline] = useState<PipelineItem[]>(defaultPipeline);
+  const [pipeline, setPipeline] = useState<PipelineItem[]>(() =>
+    buildPipeline(job.meta),
+  );
   const [queryResult, setQueryResult] = useState<QueryResult>();
 
   useEffect(() => {
-    const updatedPipeline = [...pipeline];
-
-    job.meta.forEach((subMethod, index) => {
-      Pipelines[index].subMethod.forEach((value) => {
-        if (value.toLowerCase() === subMethod || value === subMethod) {
-          updatedPipeline[index] = {
-            ...updatedPipeline[index],
-            subMethod: value,
-          };
-        }
-      });
-    });
-    setPipeline(updatedPipeline);
+    setPipeline(buildPipeline(job.meta));
   }, [job.meta]);
 
   // handle click outside for ...'s button
@@ -214,9 +213,11 @@ export default function Pipeline({
     onConfirm: async (name, description) => {
       setIsSaveConfigVisible(false);
       const jobConfig: CreateJobConfiguration = {
+        evaluation_plugins: [...(job.evaluation_plugins ?? [])],
         name: name,
         description: description,
         ref_job_id: job.id,
+        assay_type_id: job.assay_type_id,
         state: job.state,
         stage_id: job.stage_id,
         artifact: job.artifact ?? {},
@@ -411,24 +412,11 @@ export default function Pipeline({
       <div className="space-y-8">
         <div className="space-y-24">
           <div className="flex space-x-6 items-center justify-end">
-            <Icon
-              data-testid={`isnotification-${isNotificationOn}`}
-              icon={
-                isNotificationOn
-                  ? "carbon:notification-filled"
-                  : "carbon:notification-off-filled"
-              }
-              className={` ${
-                job.state === "COMPLETED"
-                  ? "cursor-not-allowed"
-                  : "cursor-pointer"
-              }  size-[30px] ${
-                isNotificationOn ? "text-pep-orange" : "text-error"
-              }`}
-              onClick={() =>
-                job.state !== "COMPLETED" &&
-                setValue("is_notification_on", !isNotificationOn)
-              }
+            <NotificationToggle
+              isOn={isNotificationOn}
+              runType={runType}
+              disabled={job.state === "COMPLETED"}
+              onToggle={() => setValue("is_notification_on", !isNotificationOn)}
             />
             <div className="flex space-x-2 items-center">
               <Button

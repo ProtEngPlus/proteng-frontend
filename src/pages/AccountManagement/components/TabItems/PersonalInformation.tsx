@@ -36,15 +36,20 @@ export default function PersonalInformation() {
       user_role: user?.user_role || "",
     },
   });
-  const { handleSubmit, setValue } = form;
+  const { handleSubmit, reset } = form;
   const navigate = useNavigate();
 
   const [userData, setUserData] = useState<FormValues | null>(null);
   useEffect(() => {
     if (user) {
-      setValue("email", user.email);
+      reset({
+        name: user.name,
+        surname: user.surname,
+        email: user.email,
+        user_role: user.user_role || "",
+      });
     }
-  }, [user, setValue]);
+  }, [user, reset]);
 
   const [isConfirmVisible, setConfirmVisible] = useState(false);
   const ConfirmProps: ConfirmOverlayProps = {
